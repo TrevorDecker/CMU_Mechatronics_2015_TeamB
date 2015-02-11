@@ -77,6 +77,8 @@ uint8_t motor_pwm_direction = 0; // 0 = forwards
 // program mode 0 = sensor, 1 = gui, velocity, 2 = gui, position, 3 = sensor, position
 uint8_t program_mode = 0;
 // other
+byte index = 0;
+char read_value[5];
 unsigned int data_timer = 0;
 uint8_t incomingByte = 0; // for incoming serial data
 unsigned long time_old = 0;
@@ -162,6 +164,7 @@ void step() {
 }
 
 void output_serial_data() {
+  /*
   Serial.print(pot_value);
   Serial.print(" ");
   Serial.print(range_value);
@@ -182,6 +185,7 @@ void output_serial_data() {
   Serial.print(" ");
   Serial.print(program_mode);
   Serial.println();
+  */
 }
 
 
@@ -209,9 +213,59 @@ void loop() {
 
   //checks to see if data has been sent 
   if (Serial.available() > 0){
+    char mode = 0;
        //read the incoming byte:
       incomingByte = Serial.read();
+      Serial.println(incomingByte);
+      switch (incomingByte){
+       case 'S': 
+         //servo mode 
+         Serial.println("S MODE");
+         index = 0;
+         mode = 'S';
+         break;
+       case 'R':
+         //reset
+         Serial.println("R Mode");
+         index = 0;
+         mode = 'R';
+         break;
+       case 'P':
+         //Position DC
+         Serial.println("P Mode");
+         index = 0;
+         mode = 'P';
+         break; 
+       case 'V':
+         //Velocity DC
+         Serial.println("V Mode");
+         index = 0;
+         mode = 'V';
+         break;
+       case 'A':
+        //Stepper position
+         Serial.println("A Mode");
+         index = 0;
+         mode = 'A';
+        break;
+       default:
+         Serial.print("default:");
+         Serial.println(incomingByte);
+        read_value[index] = incomingByte;
+        index ++;
+         int sum;
+        if(index > 3){
+          sum = atoi(read_value);
+          Serial.print("top:");
+          Serial.println(read_value);
+          index = 0;
+          //send data to the correct motor
+         //TODO  
+        }
+     }
   }
+  
+  
   
   // change program mode, if necessary
   if(limit_value_old == 0 && limit_value == 1) {
