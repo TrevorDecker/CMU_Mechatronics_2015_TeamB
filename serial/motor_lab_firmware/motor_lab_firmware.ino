@@ -73,8 +73,8 @@ unsigned int stepper_position = 0; //TODO should this be an unsigned int
 unsigned int stepper_setpoint = 0;
 uint8_t servo_setpoint = 0;
 uint8_t motor_pwm_setpoint = 0;
-uint8_t motor_pwm_direction = 0;
-// program mode 0 = sensor, 1 = gui, position, 2 = gui, velocity
+uint8_t motor_pwm_direction = 0; // 0 = forwards
+// program mode 0 = sensor, 1 = gui, velocity, 2 = gui, position, 3 = sensor, position
 uint8_t program_mode = 0;
 // other
 unsigned int data_timer = 0;
@@ -84,14 +84,14 @@ unsigned long time_now = 0;
 unsigned long time_dt = 0; // time between encoder updates
 // PID
 double pid_position_input;
-double pic_position_output;
+double pid_position_output;
 double pid_position_setpoint;
 double pid_velocity_input;
 double pid_velocity_output;
 double pid_velocity_setpoint;
 
 PID dc_position_PID(&pid_position_input,
-                    &pic_position_output,
+                    &pid_position_output,
                     &pid_position_setpoint,
                     KDPP,KDPI,KDPD,DIRECT);
 PID dc_velocity_PID(&pid_velocity_input,
@@ -129,9 +129,12 @@ void setup() {
   pinMode(OUTPUT_STEPPER_EN, OUTPUT);
   digitalWrite(OUTPUT_STEPPER_EN, 1);
   
+  // filter setup
+  filter_init(&range_filter);
   filter_init(&bend_filter);
-
-  dc_velocity_PID.SetMode(AUTOMATIC);
+  
+  // PID setup
+  dc_position_PID.SetOutputLimits(-255,255);
   
   Serial.begin(9600);
 }
@@ -171,11 +174,11 @@ void output_serial_data() {
   Serial.print(" ");
   Serial.print(time_dt);
   Serial.print(" ");
-  Serial.print(pid_velocity_input);
+  Serial.print(pid_position_input);
   Serial.print(" ");
-  Serial.print(pid_velocity_output);
+  Serial.print(pid_position_output);
   Serial.print(" ");
-  Serial.print(pid_velocity_setpoint);
+  Serial.print(pid_position_setpoint);
   Serial.print(" ");
   Serial.print(program_mode);
   Serial.println();
@@ -222,24 +225,53 @@ void loop() {
   
   // determine proper control settings
   if(program_mode == 1) {
-    // gui control position
+    // gui control velocity
+    if(dc_velocity_PID.GetMode() == MANUAL) {
+      dc_position_PID.SetMode(MANUAL);
+      dc_velocity_PID.SetMode(AUTOMATIC);
+    }
     // todo
   } else if (program_mode == 2) {
-    // gui control velocity
+    // gui control position
+    if(dc_position_PID.GetMode() == MANUAL) {
+      dc_velocity_PID.SetMode(MANUAL);
+      dc_position_PID.SetMode(AUTOMATIC);
+    }
     // todo
   } else if (program_mode == 3) {
     // sensor control with motor position
+    pid_position_input = encoder_position;
+    pid_position_setpoint = (double)(pot_value);
+    if(dc_position_PID.GetMode() == MANUAL) {
+      dc_velocity_PID.SetMode(MANUAL);
+      dc_position_PID.SetMode(AUTOMATIC);
+    }
+    dc_position_PID.Compute();
     
+    // process output
+    if(pid_position_output < 0) {
+      motor_pwm_direction = 1;
+    } else {
+      motor_pwm_direction = 0;
+    }
     
-  } else {
+    motor_pwm_setpoint = (uint8_t)pid_position_output;
+    
     stepper_setpoint = range_value; // 0-1024
-    
+    servo_setpoint = 45;
+  } else {
     // user motor velocity pid
     pid_velocity_input = encoder_velocity * 512;
     pid_velocity_setpoint = (double)(pot_value/4);
+    if(dc_velocity_PID.GetMode() == MANUAL) {
+      dc_position_PID.SetMode(MANUAL);
+      dc_velocity_PID.SetMode(AUTOMATIC);
+    }
     dc_velocity_PID.Compute();
+    motor_pwm_direction = 0; // forwards
     motor_pwm_setpoint = (uint8_t)pid_velocity_output;
-    // servo_setpoint = bend_value;
+
+    stepper_setpoint = range_value; // 0-1024
     servo_setpoint = 45;
   }
   
@@ -252,10 +284,13 @@ void loop() {
     // have a dead-band for low values
     analogWrite(OUTPUT_MOTOR_FORWARD, 0);
     analogWrite(OUTPUT_MOTOR_BACKWARD, 0);
-  } else {
-    // rescale output since analog values are 0-1023
+  } else if (motor_pwm_direction == 0) {
+    // move forwards
     analogWrite(OUTPUT_MOTOR_FORWARD, motor_pwm_setpoint);
     analogWrite(OUTPUT_MOTOR_BACKWARD, 0);
+  } else {
+    analogWrite(OUTPUT_MOTOR_FORWARD, 0);
+    analogWrite(OUTPUT_MOTOR_BACKWARD, motor_pwm_setpoint);
   }
   
   
