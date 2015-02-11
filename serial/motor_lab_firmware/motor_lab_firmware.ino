@@ -68,6 +68,11 @@ unsigned int range_value = 0;
 unsigned int bend_value = 0;
 uint8_t limit_value_old = 0;
 uint8_t limit_value = 0;
+//gui commands
+unsigned int gui_servo_setPoint = 0;
+int gui_dc_position = 0;
+int gui_dc_velocity = 0;
+int gui_stpper_position =0;
 // setpoints
 unsigned int stepper_position = 0; //TODO should this be an unsigned int
 unsigned int stepper_setpoint = 0;
@@ -77,6 +82,7 @@ uint8_t motor_pwm_direction = 0; // 0 = forwards
 // program mode 0 = sensor, 1 = gui, velocity, 2 = gui, position, 3 = sensor, position
 uint8_t program_mode = 0;
 // other
+char mode = 0;
 byte index = 0;
 char read_value[5];
 unsigned int data_timer = 0;
@@ -141,13 +147,6 @@ void setup() {
   Serial.begin(9600);
 }
 
-void set_Stepper_to(int goal){
-   //TODO 
-}
-
-void set_Stepper_velocity(double goal_velocity){
- //TODO 
-}
 
 void step() {
   // enable controller
@@ -213,40 +212,42 @@ void loop() {
 
   //checks to see if data has been sent 
   if (Serial.available() > 0){
-    char mode = 0;
        //read the incoming byte:
       incomingByte = Serial.read();
-      Serial.println(incomingByte);
       switch (incomingByte){
        case 'S': 
          //servo mode 
          Serial.println("S MODE");
          index = 0;
-         mode = 'S';
+         mode = 0;
          break;
        case 'R':
          //reset
          Serial.println("R Mode");
          index = 0;
-         mode = 'R';
+         mode = 1;
+         gui_servo_setPoint = 0;
+         gui_dc_position = 0;
+         gui_dc_velocity = 0;
+         gui_stpper_position = 0;
          break;
        case 'P':
          //Position DC
          Serial.println("P Mode");
          index = 0;
-         mode = 'P';
+         mode = 2;
          break; 
        case 'V':
          //Velocity DC
          Serial.println("V Mode");
          index = 0;
-         mode = 'V';
+         mode = 3;
          break;
        case 'A':
         //Stepper position
          Serial.println("A Mode");
          index = 0;
-         mode = 'A';
+         mode = 4;
         break;
        default:
          Serial.print("default:");
@@ -257,10 +258,24 @@ void loop() {
         if(index > 3){
           sum = atoi(read_value);
           Serial.print("top:");
-          Serial.println(read_value);
+          Serial.println(sum);
           index = 0;
-          //send data to the correct motor
-         //TODO  
+          switch (mode){
+            case 0:
+              gui_servo_setPoint = sum;
+              Serial.print("servo setPoint:");
+              Serial.println(gui_servo_setPoint);
+              break;
+            case 2:
+              gui_dc_position = sum;
+              break;
+            case 3:
+              gui_dc_velocity = sum;
+              break;
+            case  4:
+              gui_stpper_position = sum;
+              break;
+          }  
         }
      }
   }
@@ -277,16 +292,39 @@ void loop() {
   }
   
   
+  
   // determine proper control settings
   if(program_mode == 1) {
     // gui control velocity
+    servo_setpoint = gui_servo_setPoint;    
+    pid_velocity_input = encoder_velocity * 512;
+    pid_velocity_setpoint = (double)(gui_dc_velocity);
     if(dc_velocity_PID.GetMode() == MANUAL) {
       dc_position_PID.SetMode(MANUAL);
       dc_velocity_PID.SetMode(AUTOMATIC);
     }
-    // todo
+    dc_velocity_PID.Compute();
+    motor_pwm_direction = 0; // forwards
+    motor_pwm_setpoint = (uint8_t)pid_velocity_output;
+    stepper_setpoint = gui_stpper_position; // 0-1024
   } else if (program_mode == 2) {
     // gui control position
+   pid_position_input = encoder_position;
+   pid_position_setpoint = (double)(gui_dc_position);
+   dc_position_PID.Compute();
+    
+    // process output
+    if(pid_position_output < 0) {
+      motor_pwm_direction = 1;
+    } else {
+      motor_pwm_direction = 0;
+    }
+    
+    motor_pwm_setpoint = (uint8_t)pid_position_output;
+    
+    stepper_setpoint = gui_stpper_position; // 0-1024
+
+    servo_setpoint = gui_servo_setPoint;
     if(dc_position_PID.GetMode() == MANUAL) {
       dc_velocity_PID.SetMode(MANUAL);
       dc_position_PID.SetMode(AUTOMATIC);
