@@ -4,12 +4,6 @@
     * [Functional Architecture]({{}}/Functional Architecture)
     * [Cyberphysical Architecture]({{}}/Cyberphysical Architecture)
     * [System Design]({{}}/System Design)
-<!---
-    * [The Challenge]({{site.pagebaseurl}}/design-the-challenge.html)
-    * [Concept]({{site.pagebaseurl}}/design-concept.html)
-    * [Implementation]({{site.pagebaseurl}}/design-implementation.html)
-    * [Performance]({{site.pagebaseurl}}/design-performance.html)
-   -->
 * System Implementation
 * System Performance
 * Project Management
