@@ -23,7 +23,8 @@
 
             <div class=row-fluid>
                     <div id=navigation class=span2>
-                        {% include_markdown navigation.md %}
+                        {% capture nav_content %}{% include navigation.md %}{% endcapture %}
+                        {{ nav_content | markdownify }}
                     </div>
 
                     <div id=content class=span10>
