@@ -56,3 +56,15 @@ code {
     padding-left: 0;
     padding-right: 0;
 }
+
+/* new stuff */
+
+.team-profile {
+    clear: both;
+}
+
+.team-profile img {
+    width: 150px;
+    height: 150px;
+    float: left;
+}
