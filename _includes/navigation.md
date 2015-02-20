@@ -4,8 +4,8 @@
     * [Functional Architecture]({{}}/Functional Architecture)
     * [Cyberphysical Architecture]({{}}/Cyberphysical Architecture)
     * [System Design]({{}}/System Design)
-* System Implementation
-* System Performance
+* [System Implementation]({{}}/System-Implementation.html)
+* [System Performance]({{}}/System-Performance.html)
 * Project Management
     * [Schedule]({{site.pagebaseurl}}/schedule.html)
     * [Parts List]({{}}/Parts-List.html)
