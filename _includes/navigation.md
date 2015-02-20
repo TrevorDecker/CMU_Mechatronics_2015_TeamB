@@ -12,7 +12,7 @@
 * [Media](https://drive.google.com/folderview?id=0B48Hm2AZ_VIRfjRTRXlLQzVwOGY5a0drZEpWeXJMajFHODZmQzJkczFXcFJrSUtrYkRZRFU&usp=sharing)
 * [Documents]({{site.pagebaseurl}}/documents.html)
    * [Design Brainstorming]({{site.pagebaseurl}}/brainstorming.html)
-   * [Drawings, Schematics, and data sheets]({{site.pagebaseurl}}/Drawings_Schematics-Data-Sheets.html)
+   * [Drawings, Schematics, and data sheets]({{site.pagebaseurl}}/Drawings-Schematics-Data-Sheets.html)
    * [Software]({{site.pagebaseurl}}/Software.html)
    * [Presentations]({{site.pagebaseurl}}/Presentations.html)
 
