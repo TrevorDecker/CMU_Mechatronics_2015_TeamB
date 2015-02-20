@@ -12,23 +12,14 @@ google_analytics_id: ''
 #   0 - always hide
 #   1 - always show
 #   2 - show only if posts are present
-navigation: 1
+# navigation: 1
 
 # URL to source code, used in _includes/footer.html
 codeurl: 'https://github.com/TrevorDecker/CMU_Mechatronics_2015_TeamB/'
-baseurl: 'https://trevordecker.github.io/CMU_Mechatronics_2015_TeamB/'
-
-# Default categories (in order) to appear in the navigation
-sections: [
-    ['design', 'System Design'],
-    ['media', 'Media'],
-    ['management', 'Project Management'],
-    ['docs', 'Documents']
-]
 
 # Keep as an empty string if served up at the root. If served up at a specific
 # path (e.g. on GitHub pages) leave off the trailing slash, e.g. /my-project
-baseurl: ''
+baseurl: '/CMU_Mechatronics_2015_TeamB'
 
 # Dates are not included in permalinks
 permalink: none
