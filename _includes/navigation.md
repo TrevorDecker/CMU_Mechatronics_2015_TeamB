@@ -6,6 +6,6 @@
     * [Performance]({{site.pagebaseurl}}/design-performance.html)
 * [Media](https://drive.google.com/folderview?id=0B48Hm2AZ_VIRfjRTRXlLQzVwOGY5a0drZEpWeXJMajFHODZmQzJkczFXcFJrSUtrYkRZRFU&usp=sharing)
 * Project Management
-    * [Schedule]({{site.pagebaseurl}}/Schedule.html)
-    * [Documents]({{site.pagebaseurl}}/Documents.html)
+    * [Schedule]({{site.pagebaseurl}}/schedule.html)
+    * [Documents]({{site.pagebaseurl}}/documents.html)
     * [Issues Log (github)](https://github.com/TrevorDecker/CMU_Mechatronics_2015_TeamB/issues)
