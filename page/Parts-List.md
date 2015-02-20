@@ -1,5 +1,5 @@
 ---
-title: "Cyberphysical Architecture"
+title: "Parts List"
 layout: default
 ---
 
