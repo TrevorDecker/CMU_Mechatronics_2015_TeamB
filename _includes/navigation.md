@@ -1,5 +1,5 @@
 * [Team]({{site.pagebaseurl}}/team.html)
-* [System Design]({{site.pagebaseurl}}/System Design.html)
+* [System Design]({{site.pagebaseurl}}/System-Design.html)
     * [System Requirements]({{site.pagebaseurl}}/system-requirements.html)
     * [Functional Architecture]({{site.pagebaseurl}}/Functional-Architecture.html)
     * [Cyberphysical Architecture]({{site.pagebaseurl}}/Cyberphysical-Architecture.html)
