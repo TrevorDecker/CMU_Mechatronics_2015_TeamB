@@ -1,5 +1,5 @@
 ---
-title: "Design Concept"
+title: "Design Concepts"
 layout: default
 ---
 
