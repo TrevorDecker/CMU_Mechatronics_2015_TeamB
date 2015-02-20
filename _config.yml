@@ -1,6 +1,6 @@
 # Site title and subtitle. This is used in _includes/header.html
-title: 'jekyll-docs-template'
-subtitle: 'Painless documentation for your projects'
+title: 'Monkey Bars'
+subtitle: 'CMU Mechatronics 2015 Team B'
 
 # if you wish to integrate disqus on pages set your shortname here
 disqus_shortname: ''
@@ -15,7 +15,8 @@ google_analytics_id: ''
 navigation: 1
 
 # URL to source code, used in _includes/footer.html
-codeurl: 'https://github.com/bruth/jekyll-docs-template'
+codeurl: 'https://github.com/TrevorDecker/CMU_Mechatronics_2015_TeamB/'
+baseurl: 'https://trevordecker.github.io/CMU_Mechatronics_2015_TeamB/'
 
 # Default categories (in order) to appear in the navigation
 sections: [
