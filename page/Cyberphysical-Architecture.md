@@ -5,7 +5,7 @@ layout: default
 
 # Cyberphysical Architecture #
 
-<img src="../images/design_cyberphysical_architecture.jpg" />
+<img src="../images/design_cyberphysical_architecture.png" />
 ###Control###
 We will be using an asynchronous parallel control system with 4 threads (localization,window path planning, safety, logging).  We will be using a real time OS to allow for all four threads to run simultaneously.
 
