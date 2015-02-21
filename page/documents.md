@@ -9,8 +9,8 @@ The majority of our engineering work can be found in our [github repo]({{site.co
 
 * [Design Proposal]({{site.baseurl}}/docs/TeamB_DesignProposal.pdf)
 * [Steph IRL 1]({{site.baseurl}}/docs/TeamB_swc1_ILR01.pdf)
-* [Steph IRL 1]({{site.baseurl}}/docs/TeamB_swc1_ILR02.pdf)
-* [Steph IRL 1]({{site.baseurl}}/docs/TeamB_swc1_ILR03.pdf)
+* [Steph IRL 2]({{site.baseurl}}/docs/TeamB_swc1_ILR02.pdf)
+* [Steph IRL 3]({{site.baseurl}}/docs/TeamB_swc1_ILR03.pdf)
 * [Treovr IRL 1]({{site.baseurl}}/docs/TeamB_tdecker_ILR01.pdf)
 * [Trevor IRL 2]({{site.baseurl}}/docs/TeamB_tdecker_ILR02.pdf)
 * [Trevor IRL 3]({{site.baseurl}}/docs/TeamB_tdecker_ILR03.pdf)
