@@ -5,7 +5,9 @@ layout: default
 
 # System Design #
 
+<center>
 <img src="../images/cad.PNG" />
+</center>
 
 To meet the performance specifications, we are designing a mechatronic device that incorporates a microcontroller for system control, a vision algorithm to determine positioning on frame, and mechanisms to grip, pivot and extend to move along the window frame. 
 
