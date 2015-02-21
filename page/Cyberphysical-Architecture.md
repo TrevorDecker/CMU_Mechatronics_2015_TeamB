@@ -5,8 +5,7 @@ layout: default
 
 # Cyberphysical Architecture #
 
-(insert cyberphysical architecture diagram here)
-
+<img src="../images/design_cyberphysical_architecture.png" />
 ###Control###
 We will be using an asynchronous parallel control system with 4 threads (localization,window path planning, safety, logging).  We will be using a real time OS to allow for all four threads to run simultaneously.
 
@@ -22,7 +21,7 @@ Create a graph of all window area’s to be cleaned.  The nodes will be the wind
 #####Micro Problem#####
 Move to the top or bottom of the window, snake away from the horizontal edge that the robot is currently at. While the robot is moving along the window it will be verifying that the window is cleaned. 
 
-(path planning diagram here)
+<img src="../images/codeDigram.png" />
 			
 ###Logging System####
 The system logger will record the state of the system.  This information will be written to disk locally and broadcast over a radio serial link so that a monitoring computer can view the current state of the robot. 
