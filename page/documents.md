@@ -17,3 +17,6 @@ The majority of our engineering work can be found in our [github repo]({{site.co
 * [Ian Hartwig ILR 1]({{site.baseurl}}/docs/TeamB_ihartwig_ILR01.pdf)
 * [Ian Hartwig ILR 2]({{site.baseurl}}/docs/TeamB_ihartwig_ILR02.pdf)
 * [Ian Hartwig ILR 3]({{site.baseurl}}/docs/TeamB_ihartwig_ILR03.pdf)
+* [Ian Rosado ILR 1]({{site.baseurl}}/docs/TeamB_irosado_ILR01.pdf)
+* [Ian Rosado ILR 2]({{site.baseurl}}/docs/TeamB_irosado_ILR02.pdf)
+* [Ian Rosado ILR 3]({{site.baseurl}}/docs/TeamB_irosado_ILR03.pdf)
