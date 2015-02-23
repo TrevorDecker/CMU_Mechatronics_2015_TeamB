@@ -29,11 +29,11 @@
 #
 
 # build environment
-CC = arm-none-eabi-gcc
-AR = arm-none-eabi-ar
-OBJCOPY = arm-none-eabi-objcopy
-OBJDUMP = arm-none-eabi-objdump
-SIZE = arm-none-eabi-size
+CC = ~/gcc-arm-none-eabi/bin/arm-none-eabi-gcc
+AR = ~/gcc-arm-none-eabi/bin/arm-none-eabi-ar
+OBJCOPY = ~/gcc-arm-none-eabi/bin/arm-none-eabi-objcopy
+OBJDUMP = ~/gcc-arm-none-eabi/bin/arm-none-eabi-objdump
+SIZE = ~/gcc-arm-none-eabi/bin/arm-none-eabi-size
 MAKE = make
 
 # location of OpenOCD Board .cfg files (only used with 'make program')
@@ -61,7 +61,8 @@ LIBSOURCES =
 LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
 LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c
 LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c
-
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c
 
 LIBOBJS = $(LIBSOURCES:.c=.o)
 
@@ -108,7 +109,7 @@ libstm32f4.a: $(LIBOBJS)
 
 $(PROJ_NAME).elf: $(SOURCES)
 	@echo
-	$(CC) $(CFLAGS) $(CFLAGS_PROJECT) $^ -o $@
+	$(CC) $^ -o $@ $(CFLAGS) $(CFLAGS_PROJECT)
 	$(OBJCOPY) -O ihex $(PROJ_NAME).elf $(PROJ_NAME).hex
 	$(OBJCOPY) -O binary $(PROJ_NAME).elf $(PROJ_NAME).bin
 	$(OBJDUMP) -St $(PROJ_NAME).elf >$(PROJ_NAME).lst
@@ -128,3 +129,4 @@ clean:
 	rm $(PROJ_NAME).bin || true
 	rm $(PROJ_NAME).map || true
 	rm $(PROJ_NAME).lst || true
+	rm $(PROJ_NAME).d || true
