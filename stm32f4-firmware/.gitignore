@@ -1,0 +1,13 @@
+
+# Firmware Compilation Artifacts
+*.d
+*.a
+*.elf
+*.hex
+*.bin
+*.map
+*.lst
+
+# OS X Files
+.DS_Store
+
