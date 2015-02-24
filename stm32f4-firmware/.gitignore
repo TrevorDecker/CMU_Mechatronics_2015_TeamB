@@ -1,5 +1,6 @@
 
 # Firmware Compilation Artifacts
+*.o
 *.d
 *.a
 *.elf
