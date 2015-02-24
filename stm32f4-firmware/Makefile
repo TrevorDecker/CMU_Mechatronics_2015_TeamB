@@ -29,12 +29,14 @@
 #
 
 # build environment
-CC = ~/gcc-arm-none-eabi/bin/arm-none-eabi-gcc
-AR = ~/gcc-arm-none-eabi/bin/arm-none-eabi-ar
-OBJCOPY = ~/gcc-arm-none-eabi/bin/arm-none-eabi-objcopy
-OBJDUMP = ~/gcc-arm-none-eabi/bin/arm-none-eabi-objdump
-SIZE = ~/gcc-arm-none-eabi/bin/arm-none-eabi-size
+CC = arm-none-eabi-gcc
+AR = arm-none-eabi-ar
+OBJCOPY = arm-none-eabi-objcopy
+OBJDUMP = arm-none-eabi-objdump
+SIZE = arm-none-eabi-size
 MAKE = make
+GDB = arm-none-eabi-gdb
+OPENOCD = openocd
 
 # location of OpenOCD Board .cfg files (only used with 'make program')
 # OPENOCD_BOARD_DIR=/usr/share/openocd/scripts/board
@@ -118,11 +120,14 @@ $(PROJ_NAME).elf: $(SOURCES)
 
 # load the program over openocd/jtag/stlink
 program: proj
-	openocd -f $(OPENOCD_BOARD_DIR)/$(OPENOCD_BOARD_FILE) -f $(OPENOCD_PROC_FILE) -c "stm_flash \"`pwd`/$(PROJ_NAME).bin\"" -c shutdown
+	$(OPENOCD) -f $(OPENOCD_BOARD_DIR)/$(OPENOCD_BOARD_FILE) -f $(OPENOCD_PROC_FILE) -c "stm_flash \"`pwd`/$(PROJ_NAME).bin\"" -c shutdown
 
 
 debug:
-	openocd -f $(OPENOCD_BOARD_DIR)/$(OPENOCD_BOARD_FILE) -f $(OPENOCD_PROC_FILE)
+	$(OPENOCD) -f $(OPENOCD_BOARD_DIR)/$(OPENOCD_BOARD_FILE) -f $(OPENOCD_PROC_FILE)
+
+gdb:
+	$(GDB)
 
 clean:
 	rm $(LIBOBJS) || true
