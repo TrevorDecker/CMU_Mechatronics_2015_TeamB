@@ -39,9 +39,10 @@ MAKE = make
 # location of OpenOCD Board .cfg files (only used with 'make program')
 # OPENOCD_BOARD_DIR=/usr/share/openocd/scripts/board
 OPENOCD_BOARD_DIR=/usr/local/share/openocd/scripts/board
-
+# Board file (comes with open ocd)
+OPENOCD_BOARD_FILE=stm32f429discovery.cfg
 # Configuration (cfg) file containing programming directives for OpenOCD
-OPENOCD_PROC_FILE=stm32f0-openocd.cfg
+OPENOCD_PROC_FILE=stm32f4-openocd.cfg
 
 # project parameters
 PROJ_NAME = main
@@ -92,7 +93,7 @@ AFLAGS = $(MCFLAGS)
 CFLAGS_PROJECT = -L . -lstm32f4 -T $(LDSCRIPT) -MD
 
 
-.PHONY: all proj clean program openocd
+.PHONY: all proj clean program debug
 
 all: proj
 
@@ -115,11 +116,13 @@ $(PROJ_NAME).elf: $(SOURCES)
 	$(OBJDUMP) -St $(PROJ_NAME).elf >$(PROJ_NAME).lst
 	$(SIZE) $(PROJ_NAME).elf
 
+# load the program over openocd/jtag/stlink
 program: proj
-	openocd -f $(OPENOCD_BOARD_DIR)/stm32f0discovery.cfg -f $(OPENOCD_PROC_FILE) -c "stm_flash \"`pwd`/$(PROJ_NAME).bin\"" -c shutdown
+	openocd -f $(OPENOCD_BOARD_DIR)/$(OPENOCD_BOARD_FILE) -f $(OPENOCD_PROC_FILE) -c "stm_flash \"`pwd`/$(PROJ_NAME).bin\"" -c shutdown
 
-openocd:
-	openocd -f $(OPENOCD_BOARD_DIR)/stm32f0discovery.cfg -f $(OPENOCD_PROC_FILE)
+
+debug:
+	openocd -f $(OPENOCD_BOARD_DIR)/$(OPENOCD_BOARD_FILE) -f $(OPENOCD_PROC_FILE)
 
 clean:
 	rm $(LIBOBJS) || true

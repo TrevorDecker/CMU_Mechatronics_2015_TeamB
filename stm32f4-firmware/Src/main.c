@@ -79,13 +79,23 @@ int main(void)
   SystemClock_Config();
 
 
-  /* Add your application code here
-     */
-
+  // pin 13 output setup
+  __HAL_RCC_GPIOG_CLK_ENABLE();
+  GPIO_InitTypeDef gpiog_init;
+  gpiog_init.Pin = GPIO_PIN_13;
+  gpiog_init.Mode = GPIO_MODE_OUTPUT_PP;
+  gpiog_init.Pull = GPIO_NOPULL;
+  gpiog_init.Speed = GPIO_SPEED_FAST;
+  HAL_GPIO_Init(GPIOG, &gpiog_init);
 
   /* Infinite loop */
   while (1)
   {
+    // toggle pin 13
+    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);
+    HAL_Delay(1000);
+    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET);
+    HAL_Delay(1000);
   }
 }
 
