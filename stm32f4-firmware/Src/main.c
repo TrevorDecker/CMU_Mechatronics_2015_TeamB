@@ -88,6 +88,10 @@ int main(void)
   gpiog_init.Speed = GPIO_SPEED_FAST;
   HAL_GPIO_Init(GPIOG, &gpiog_init);
 
+  // setup lcd log
+  LCD_LOG_Init();
+  LCD_UsrLog("Hello world!");
+
   /* Infinite loop */
   while (1)
   {
