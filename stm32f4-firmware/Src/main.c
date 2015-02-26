@@ -90,8 +90,7 @@ int main(void)
 
   // setup lcd log
   LCD_LOG_Init();
-  // LCD_UsrLog("Hello world!");
-  LCD_LOG_putc('h');
+  LCD_UsrLog("Hello world!\n");
   BSP_LCD_DrawHLine(0, 20, 240);
 
 

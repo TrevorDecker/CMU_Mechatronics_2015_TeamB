@@ -10,6 +10,9 @@
   *          on any application using the LCD display and allows to dump user,
   *          debug and error messages by using the following macros: LCD_ErrLog(),
   *          LCD_UsrLog() and LCD_DbgLog().
+  *
+  *          NOTE: Characters will not be pushed to the screen until a newline
+  *          character is found.
   *         
   *          It supports also the scroll feature by embedding an internal software
   *          cache for display. This feature allows to dump message sequentially
@@ -133,12 +136,12 @@ uint16_t LCD_ScrollBackStep;
 
 
 /**
-  * @brief  Initializes the LCD Log module 
+  * @brief  Initializes the LCD Log module from scratch.
   * @param  None
   * @retval None
   */
 
-void LCD_LOG_Init ( void)
+void LCD_LOG_Init (void)
 {
   /* Deinit LCD cache */
   LCD_LOG_DeInit();
