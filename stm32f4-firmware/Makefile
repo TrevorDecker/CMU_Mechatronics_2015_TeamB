@@ -54,10 +54,12 @@ CPU_MODEL_SPECIFIC = STM32F429ZIT6
 
 INCLUDEDIRS =
 INCLUDEDIRS += ./Inc
-INCLUDEDIRS += ./Drivers/BSP/STM32F072B-Discovery
 INCLUDEDIRS += ./Drivers/STM32F4xx_HAL_Driver/Inc
 INCLUDEDIRS += ./Drivers/CMSIS/Include
 INCLUDEDIRS += ./Drivers/CMSIS/Device/ST/STM32F4xx/Include
+INCLUDEDIRS += ./Drivers/BSP/STM32F429I-Discovery/
+INCLUDEDIRS += ./Utilities/Fonts
+INCLUDEDIRS += ./Utilities/Log
 
 LIBSOURCES = 
 LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
@@ -65,6 +67,19 @@ LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c
 LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c
 LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c
 LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma2d.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_ltdc.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sdram.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fmc.c
+LIBSOURCES += ./Drivers/BSP/Components/ili9341/ili9341.c
+LIBSOURCES += ./Drivers/BSP/STM32F429I-Discovery/stm32f429i_discovery.c
+LIBSOURCES += ./Drivers/BSP/STM32F429I-Discovery/stm32f429i_discovery_lcd.c
+LIBSOURCES += ./Drivers/BSP/STM32F429I-Discovery/stm32f429i_discovery_sdram.c
+LIBSOURCES += ./Utilities/Log/lcd_log.c
 
 LIBOBJS = $(LIBSOURCES:.c=.o)
 

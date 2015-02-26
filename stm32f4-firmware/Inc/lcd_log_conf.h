@@ -67,7 +67,7 @@
   */ 
 
 /* Comment the line below to disable the scroll back and forward features */
-#define     LCD_SCROLL_ENABLED      1 
+// #define     LCD_SCROLL_ENABLED      1 
 
 /* Define the Fonts  */
 #define     LCD_LOG_HEADER_FONT                   Font16
@@ -75,10 +75,10 @@
 #define     LCD_LOG_TEXT_FONT                     Font12
             
 /* Define the LCD LOG Color  */
-#define     LCD_LOG_BACKGROUND_COLOR              LCD_COLOR_WHITE
-#define     LCD_LOG_TEXT_COLOR                    LCD_COLOR_DARKBLUE
+#define     LCD_LOG_BACKGROUND_COLOR              LCD_COLOR_DARKBLUE
+#define     LCD_LOG_TEXT_COLOR                    LCD_COLOR_WHITE
 
-#define     LCD_LOG_SOLID_BACKGROUND_COLOR        LCD_COLOR_BLUE
+#define     LCD_LOG_SOLID_BACKGROUND_COLOR        LCD_COLOR_BLACK
 #define     LCD_LOG_SOLID_TEXT_COLOR              LCD_COLOR_WHITE
 
 /* Define the cache depth */
@@ -90,13 +90,16 @@
 #endif
 
 /* Redirect the printf to the LCD */
-#ifdef __GNUC__
+// #ifdef __GNUC__
 /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
    set to 'Yes') calls __io_putchar() */
-#define LCD_LOG_PUTCHAR int __io_putchar(int ch)
-#else
-#define LCD_LOG_PUTCHAR int fputc(int ch, FILE *f)
-#endif /* __GNUC__ */
+// #define LCD_LOG_PUTCHAR int __io_putchar(int ch)
+// #else
+// #define LCD_LOG_PUTCHAR int fputc(int ch, FILE *f)
+// #endif /* __GNUC__ */
+/* None of that garbage from above. Make the lcd a possible stream and write to
+   it in our newlib stubs. Also renamed LCD_LOG_PUTCHAR permanently. */
+#define LCD_LOG_FILENO 3
 
 /** @defgroup LCD_LOG_CONF_Exported_TypesDefinitions
   * @{

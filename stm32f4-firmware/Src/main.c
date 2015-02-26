@@ -90,7 +90,30 @@ int main(void)
 
   // setup lcd log
   LCD_LOG_Init();
-  LCD_UsrLog("Hello world!");
+  // LCD_UsrLog("Hello world!");
+  LCD_LOG_putc('h');
+  BSP_LCD_DrawHLine(0, 20, 240);
+
+
+
+  // BSP_LCD_Init();
+  // BSP_LCD_LayerDefaultInit(0, (uint32_t) LCD_FRAME_BUFFER);
+  // // BSP_LCD_SetLayerWindow(0, 0, 0, 240, 160);
+  // BSP_LCD_SetLayerVisible(0, ENABLE);
+
+  // BSP_LCD_SelectLayer(0);
+  // BSP_LCD_Clear(LCD_COLOR_BLUE);
+  // BSP_LCD_SetBackColor(LCD_COLOR_BLUE);
+  // BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+  // BSP_LCD_DisplayOn();
+
+  // BSP_LCD_DisplayStringAtLineMode(1, (uint8_t *) "Test display", CENTER_MODE);
+  // HAL_Delay(500);
+  // BSP_LCD_DisplayStringAtLineMode(5, (uint8_t *) "ALL CAPS", CENTER_MODE);
+  // HAL_Delay(500);
+  // BSP_LCD_DisplayStringAtLineMode(8, (uint8_t *) "all lowercase", CENTER_MODE);
+
+
 
   /* Infinite loop */
   while (1)
