@@ -1,50 +1,15 @@
 /**
   ******************************************************************************
-  * @file    Templates/Src/main.c 
-  * @author  MCD Application Team
-  * @version V1.2.0
-  * @date    26-December-2014
+  * @file    Src/main.c 
+  * @author  CMU Mechatronics 2015 Team B
   * @brief   Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; COPYRIGHT(c) 2014 STMicroelectronics</center></h2>
-  *
-  * Redistribution and use in source and binary forms, with or without modification,
-  * are permitted provided that the following conditions are met:
-  *   1. Redistributions of source code must retain the above copyright notice,
-  *      this list of conditions and the following disclaimer.
-  *   2. Redistributions in binary form must reproduce the above copyright notice,
-  *      this list of conditions and the following disclaimer in the documentation
-  *      and/or other materials provided with the distribution.
-  *   3. Neither the name of STMicroelectronics nor the names of its contributors
-  *      may be used to endorse or promote products derived from this software
-  *      without specific prior written permission.
-  *
-  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  *
   ******************************************************************************
   */
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-/** @addtogroup STM32F4xx_HAL_Examples
-  * @{
-  */
-
-/** @addtogroup Templates
-  * @{
-  */
+#define VERSION_STRING "0.1"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -90,38 +55,27 @@ int main(void)
 
   // setup lcd log
   LCD_LOG_Init();
-  LCD_UsrLog("Hello world!\n");
-  BSP_LCD_DrawHLine(0, 20, 240);
+  char header_buffer[64];
+  sprintf(&header_buffer, "Monkey Bot %s", VERSION_STRING);
+  LCD_LOG_SetHeader(&header_buffer);
 
-
-
-  // BSP_LCD_Init();
-  // BSP_LCD_LayerDefaultInit(0, (uint32_t) LCD_FRAME_BUFFER);
-  // // BSP_LCD_SetLayerWindow(0, 0, 0, 240, 160);
-  // BSP_LCD_SetLayerVisible(0, ENABLE);
-
-  // BSP_LCD_SelectLayer(0);
-  // BSP_LCD_Clear(LCD_COLOR_BLUE);
-  // BSP_LCD_SetBackColor(LCD_COLOR_BLUE);
-  // BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
-  // BSP_LCD_DisplayOn();
-
-  // BSP_LCD_DisplayStringAtLineMode(1, (uint8_t *) "Test display", CENTER_MODE);
-  // HAL_Delay(500);
-  // BSP_LCD_DisplayStringAtLineMode(5, (uint8_t *) "ALL CAPS", CENTER_MODE);
-  // HAL_Delay(500);
-  // BSP_LCD_DisplayStringAtLineMode(8, (uint8_t *) "all lowercase", CENTER_MODE);
-
-
+  uint32_t blink_count = 0;
 
   /* Infinite loop */
   while (1)
   {
+    // update status
+    LCD_LOG_ClearTextZone();
+    LCD_UsrLog("Hello world!\n");
+    LCD_UsrLog("Blink count: %d\n", blink_count);
+
     // toggle pin 13
     HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);
     HAL_Delay(1000);
     HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET);
     HAL_Delay(1000);
+
+    blink_count++;
   }
 }
 
@@ -225,13 +179,3 @@ void assert_failed(uint8_t* file, uint32_t line)
   }
 }
 #endif
-
-/**
-  * @}
-  */ 
-
-/**
-  * @}
-  */ 
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
