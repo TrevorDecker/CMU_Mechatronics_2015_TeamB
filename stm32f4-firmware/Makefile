@@ -54,11 +54,12 @@ CPU_MODEL_SPECIFIC = STM32F429ZIT6
 
 INCLUDEDIRS =
 INCLUDEDIRS += ./Inc
-INCLUDEDIRS += ./Drivers/BSP/STM32F072B-Discovery
 INCLUDEDIRS += ./Drivers/STM32F4xx_HAL_Driver/Inc
 INCLUDEDIRS += ./Drivers/CMSIS/Include
 INCLUDEDIRS += ./Drivers/CMSIS/Device/ST/STM32F4xx/Include
-INCLUDEDIRS += ./Drivers/BSP/Components/Common
+INCLUDEDIRS += ./Drivers/BSP/STM32F429I-Discovery/
+INCLUDEDIRS += ./Utilities/Fonts
+INCLUDEDIRS += ./Utilities/Log
 
 LIBSOURCES = 
 LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
@@ -66,12 +67,29 @@ LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c
 LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c
 LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c
 LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma2d.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_ltdc.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sdram.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c
+LIBSOURCES += ./Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fmc.c
+LIBSOURCES += ./Drivers/BSP/Components/ili9341/ili9341.c
+LIBSOURCES += ./Drivers/BSP/STM32F429I-Discovery/stm32f429i_discovery.c
+LIBSOURCES += ./Drivers/BSP/STM32F429I-Discovery/stm32f429i_discovery_lcd.c
+LIBSOURCES += ./Drivers/BSP/STM32F429I-Discovery/stm32f429i_discovery_sdram.c
+LIBSOURCES += ./Utilities/Log/lcd_log.c
 
 LIBOBJS = $(LIBSOURCES:.c=.o)
+
+NEWLIB_DIR = newlib-2.2.0-1
+NEWLIB_BRANCH_DIR = arm-none-eabi/armv7e-m/fpu/newlib
 
 ################################################################################
 # auto-generated project paths
 SOURCES = $(shell find ./Src -name *.c)
+SOURCES += ./Startup/newlib_stubs.c
 SOURCES += Startup/startup_stm32f429xx.s # add assembly startup template
 OBJ1 = $(SOURCES:.c=.o)
 OBJ = $(OBJ1:.s=.o)
@@ -86,20 +104,30 @@ MCFLAGS = -mcpu=cortex-m4 -mthumb -mlittle-endian -mfpu=fpv4-sp-d16 -mfloat-abi=
 OPTIMIZE = -Os
 # combine flags
 CFLAGS = $(MCFLAGS) $(OPTIMIZE) $(DEFS)
-CFLAGS += -Wl,--gc-sections -Wl,-Map=main.map 
+CFLAGS += -Wl,--gc-sections -Wl,-Map=main.map -std=c99
 CFLAGS += $(addprefix -I ,$(INCLUDEDIRS))
 CFLAGS += -include stm32f4xx_hal_conf.h # apparently everyone needs this config
 AFLAGS = $(MCFLAGS)
 
 # project compilation flags
-CFLAGS_PROJECT = -L . -lstm32f4 -T $(LDSCRIPT) -MD
+CFLAGS_PROJECT = 
+CFLAGS_PROJECT += -L . -lstm32f4 # stm32f4 HAL/BSP
+CFLAGS_PROJECT += -L ./newlib -lc # newlib (libc functions)
+CFLAGS_PROJECT += -T $(LDSCRIPT) -MD # linker script
 
 
 .PHONY: all proj clean program debug
 
 all: proj
 
-proj: libstm32f4.a $(PROJ_NAME).elf
+proj: newlib libstm32f4.a $(PROJ_NAME).elf
+
+newlib:
+ifeq ($(wildcard $(NEWLIB_DIR)/Makefile), )
+	cd $(NEWLIB_DIR) && ./configure --target arm-none-eabi --disable-newlib-supplied-syscalls
+endif
+	cd $(NEWLIB_DIR)/$(NEWLIB_BRANCH_DIR) && $(MAKE)
+	cp -r $(NEWLIB_DIR)/$(NEWLIB_BRANCH_DIR) ./
 
 libstm32f4.a: $(LIBOBJS)
 	@echo
@@ -138,3 +166,8 @@ clean:
 	rm $(PROJ_NAME).map || true
 	rm $(PROJ_NAME).lst || true
 	rm $(PROJ_NAME).d || true
+
+reallyclean: clean
+	rm -rf newlib || true
+	cd $(NEWLIB_DIR) && $(MAKE) clean
+	cd $(NEWLIB_DIR) && rm Makefile

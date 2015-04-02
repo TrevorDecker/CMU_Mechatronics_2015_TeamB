@@ -128,6 +128,7 @@ void LCD_LOG_DeInit(void);
 void LCD_LOG_SetHeader(uint8_t *Title);
 void LCD_LOG_SetFooter(uint8_t *Status);
 void LCD_LOG_ClearTextZone(void);
+int LCD_LOG_putc(int ch);
 void LCD_LOG_UpdateDisplay (void);
 
 #if (LCD_SCROLL_ENABLED == 1)

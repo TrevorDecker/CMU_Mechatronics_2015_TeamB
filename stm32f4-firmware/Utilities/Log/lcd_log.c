@@ -10,6 +10,9 @@
   *          on any application using the LCD display and allows to dump user,
   *          debug and error messages by using the following macros: LCD_ErrLog(),
   *          LCD_UsrLog() and LCD_DbgLog().
+  *
+  *          NOTE: Characters will not be pushed to the screen until a newline
+  *          character is found.
   *         
   *          It supports also the scroll feature by embedding an internal software
   *          cache for display. This feature allows to dump message sequentially
@@ -133,15 +136,30 @@ uint16_t LCD_ScrollBackStep;
 
 
 /**
-  * @brief  Initializes the LCD Log module 
+  * @brief  Initializes the LCD Log module from scratch.
   * @param  None
   * @retval None
   */
 
-void LCD_LOG_Init ( void)
+void LCD_LOG_Init (void)
 {
   /* Deinit LCD cache */
   LCD_LOG_DeInit();
+
+  /* Init the LCD */
+  BSP_LCD_Init();
+  BSP_LCD_SelectLayer(0);
+  BSP_LCD_LayerDefaultInit(0, (uint32_t) LCD_FRAME_BUFFER);
+  BSP_LCD_SetLayerVisible(0, ENABLE);
+  BSP_LCD_LayerDefaultInit(1, (uint32_t) LCD_FRAME_BUFFER+LCD_FRAME_BUFFER_SIZE);
+  // BSP_LCD_SelectLayer(1);
+  BSP_LCD_SetLayerVisible(1, DISABLE);
+  BSP_LCD_DisplayOn();
+
+  /* Set default log colors/font */
+  BSP_LCD_SetBackColor(LCD_LOG_BACKGROUND_COLOR);
+  BSP_LCD_SetTextColor(LCD_LOG_TEXT_COLOR);
+  BSP_LCD_SetFont (&LCD_LOG_TEXT_FONT);
   
   /* Clear the LCD */
   BSP_LCD_Clear(LCD_LOG_BACKGROUND_COLOR);  
@@ -237,10 +255,9 @@ void LCD_LOG_ClearTextZone(void)
 /**
   * @brief  Redirect the printf to the LCD
   * @param  c: character to be displayed
-  * @param  f: output file pointer
   * @retval None
  */
-LCD_LOG_PUTCHAR
+int LCD_LOG_putc(int ch)
 {
   
   sFONT *cFont = BSP_LCD_GetFont();

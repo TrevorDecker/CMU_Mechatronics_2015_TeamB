@@ -1,4 +1,8 @@
 
+# Newlib compilation
+newlib
+newlib-2.2.0-1/arm-none-eabi
+
 # Firmware Compilation Artifacts
 *.o
 *.d

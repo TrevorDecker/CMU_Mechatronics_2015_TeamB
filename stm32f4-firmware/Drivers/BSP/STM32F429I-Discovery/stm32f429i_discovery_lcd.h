@@ -110,6 +110,7 @@ typedef enum
   */     
 #define MAX_LAYER_NUMBER       2
 #define LCD_FRAME_BUFFER       ((uint32_t)0xD0000000)
+#define LCD_FRAME_BUFFER_SIZE  ((uint32_t)76800) // 240x320
 #define BUFFER_OFFSET          ((uint32_t)0x50000) 
 
 /** 
