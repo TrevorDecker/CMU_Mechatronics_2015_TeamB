@@ -13,7 +13,8 @@ The robot is comprised of three separate units: a gripping unit, an extending un
 
 At the beginning of the window washing process, the grippers are attached to both sides of the frame. As the robot shuffles up the frame, releasing the gripping and extending the arm as it climbs, the cleaning unit slides back and forth to clean a section of the window. 
 
-Design Iterations 
+#Design Iterations 
+
 Many design improvements have been made since the start of the project. Firstly, the T-rail has been removed due to size and manufacturing considerations. By using bearing blocks instead, we have been able to reduce the height of our robot by half. As for our gripping unit, we have been able to move from a four-bar linkage to a clamp design which has allowed us to cut down on size and, as result, reduce the distance away from the window pane. This was an  essential in minimizing the torque that causes the robot to fall away from the window. The pivoting unit has seen improvements in material selection. Due to failures that occurred in testing, we are now using metal instead of plastic to transfer loads. The cleaning unit has also undergone many changes in design that have improved our motion along the extending arm as well as our contact with the window surface.
 
 (INSERT CHRONOLOGICAL PHOTOS HEREEEEE)
