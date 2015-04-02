@@ -15,6 +15,7 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 static void Error_Handler(void);
@@ -43,6 +44,45 @@ int main(void)
   /* Configure the System clock to 180 MHz */
   SystemClock_Config();
 
+  // setup to generate a fixed PWM signal
+  uint32_t uwPrescalerValue = ((SystemCoreClock /2) / 2000) - 1;
+  TIM_HandleTypeDef TimHandle;
+  /*##-1- Configure the TIM peripheral #######################################*/ 
+  /* Initialize TIMx peripheral as follow:
+       + Prescaler = (SystemCoreClock/2)/2000
+       + Period = 65535
+       + ClockDivision = 0
+       + Counter direction = Up
+  */
+  TimHandle.Instance = TIMx;
+  TimHandle.Init.Period        = 65535;
+  TimHandle.Init.Prescaler     = uwPrescalerValue;
+  TimHandle.Init.ClockDivision = 0;
+  TimHandle.Init.CounterMode   = TIM_COUNTERMODE_UP;
+  if(HAL_TIM_OC_Init(&TimHandle) != HAL_OK)
+  {
+    /* Initialization Error */
+    Error_Handler();
+  }
+  /*##-2- Configure the Output Compare channels #########################################*/ 
+  /* Common configuration for all channels */
+  TIM_OC_InitTypeDef sConfig;
+  sConfig.OCMode     = TIM_OCMODE_ACTIVE;
+  sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+  /* Set the pulse (delay1)  value for channel 1 */
+  sConfig.Pulse = 1000;  
+  if(HAL_TIM_OC_ConfigChannel(&TimHandle, &sConfig, TIM_CHANNEL_1) != HAL_OK)
+  {
+    /* Configuration Error */
+    Error_Handler();
+  }
+  /*##-4- Start signals generation ###########################################*/ 
+  /* Start channel 1 in Output compare mode */
+  if(HAL_TIM_OC_Start(&TimHandle, TIM_CHANNEL_1) != HAL_OK)
+  {
+    /* Starting Error */
+    Error_Handler();
+  }
 
   // pin 13 output setup
   __HAL_RCC_GPIOG_CLK_ENABLE();
