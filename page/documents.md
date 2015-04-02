@@ -20,3 +20,7 @@ The majority of our engineering work can be found in our [github repo]({{site.co
 * [Ian Rosado ILR 1]({{site.baseurl}}/docs/TeamB_irosado_ILR01.pdf)
 * [Ian Rosado ILR 2]({{site.baseurl}}/docs/TeamB_irosado_ILR02.pdf)
 * [Ian Rosado ILR 3]({{site.baseurl}}/docs/TeamB_irosado_ILR03.pdf)
+* [Ian Rosado ILR 4]({{site.baseurl}}/docs/TeamB_irosado_ILR04.pdf)
+* [Ian Rosado ILR 5]({{site.baseurl}}/docs/TeamB_irosado_ILR05.pdf)
+* [Ian Rosado ILR 6]({{site.baseurl}}/docs/TeamB_irosado_ILR06.pdf)
+* [Ian Rosado ILR 7]({{site.baseurl}}/docs/TeamB_irosado_ILR07.pdf)
