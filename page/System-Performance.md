@@ -14,4 +14,6 @@ layout: default
 
 #Extending Unit#
    The extension arm has been built and has been tested. The lead screw is able to power the extending arm quickly as long as there is enough current from the power supply. Due to the length of the lead screw, we are concerned about the binding of the lead screw. There are also some concerns regarding the weight of the arm but due to the transfer gearbox but we will attempt to cut down on the weight in a way that would not compromise function.
-   
+
+#Pivoting Unit#
+The pivoting motion is dictated by a gearbox with a worm gear. It has been assembled and is in the process of being tested. From testing the pivoting unit, we understood the importance of material selection and failure modes. At first, we made the spacers out of acrylic which yielded under the stress of the turning gear. The next step is to make new spacers of a larger radius out of delrin or alumnium to withstand the stresses. This improvement will allow us to continue testing.
