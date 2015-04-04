@@ -68,3 +68,17 @@ code {
     height: 150px;
     float: left;
 }
+
+img {
+    width: 500px;
+}
+
+a img {
+    padding: 2px;
+    border: 1px solid #eee;
+}
+
+a:hover img {
+    padding: 2px;
+    border: 1px solid #ccc;
+}
