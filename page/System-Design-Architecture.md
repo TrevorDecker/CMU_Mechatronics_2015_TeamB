@@ -1,11 +1,18 @@
 ---
-title: "Cyberphysical Architecture"
+title: "Architecture"
 layout: default
 ---
+
+# Functional Architecture #
+
+The functional diagram illustrates on a high level how data is gathered and passed through the system. As the robot cycles between states of moving and cleaning, the sensors provide feedback. This information, once relayed to the controller can dictate the motion of the mechanisms. 
+
+<img src="../images/Functional_Diagram.jpg" />
 
 # Cyberphysical Architecture #
 
 <img src="../images/design_cyberphysical_architecture.png" />
+
 ###Control###
 We will be using an asynchronous parallel control system with 4 threads (localization,window path planning, safety, logging).  We will be using a real time OS to allow for all four threads to run simultaneously.
 

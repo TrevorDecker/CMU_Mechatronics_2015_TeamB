@@ -1,8 +1,8 @@
 * [Team]({{site.pagebaseurl}}/team.html)
 * [System Design]({{site.pagebaseurl}}/System-Design.html)
-    * [System Requirements]({{site.pagebaseurl}}/system-requirements.html)
-    * [Functional Architecture]({{site.pagebaseurl}}/Functional-Architecture.html)
-    * [Cyberphysical Architecture]({{site.pagebaseurl}}/Cyberphysical-Architecture.html)
+    * [Brainstorming]({{site.pagebaseurl}}/System-Design-Brainstorming.html)
+    * [Requirements]({{site.pagebaseurl}}/System-Design-Requirements.html)
+    * [Architecture]({{site.pagebaseurl}}/System-Design-Architecture.html)
 * [System Implementation]({{site.pagebaseurl}}/System-Implementation.html)
 * [System Performance]({{site.pagebaseurl}}/System-Performance.html)
 * Project Management

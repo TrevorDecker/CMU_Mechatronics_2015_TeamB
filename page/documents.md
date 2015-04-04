@@ -44,19 +44,3 @@ The majority of our engineering work can be found in our mechanical and software
 * [ST Discovery Board](https://drive.google.com/open?id=0BzFYMWn3wz6CejhDM2w5S3VmdTQ&authuser=0)
 * [Versa Plantary Gear Boxl](https://drive.google.com/open?id=0BzFYMWn3wz6CNS1HY05BRDY0R0U&authuser=0)
 * [Stepper Motor Control Board ](https://drive.google.com/open?id=0BzFYMWn3wz6CaUxUbDVGYVY0LTA&authuser=0)
-
-## Brainstorming
-
-A good deal of our intial design and brainstorming happens on the whiteboard.<br />
-
-<img src="{{site.baseurl}}/images/design2.jpg" width="500px" height="375px" />
-Early designs for the gripper.<br />
-
-<img src="{{site.baseurl}}/images/design4.jpg"  width="500px" height="375px" />
-We experimented with a variety of ways to move around the window.<br />
-
-<img src="{{site.baseurl}}/images/design5.jpg"  width="500px" height="375px" />
-A somewhat complete design for reaching all areas of the window.<br />
-
-<img src="{{site.baseurl}}/images/design6.jpg"  width="500px" height="375px" />
-We toyed with 2 different methods for driving the extension arm - belt or lead screw.<br />
