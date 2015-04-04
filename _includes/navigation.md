@@ -10,9 +10,5 @@
     * [Parts List]({{site.pagebaseurl}}/Parts-List.html)
     * [Issues Log (github)](https://github.com/TrevorDecker/CMU_Mechatronics_2015_TeamB/issues)
 * [Media](https://drive.google.com/folderview?id=0B48Hm2AZ_VIRfjRTRXlLQzVwOGY5a0drZEpWeXJMajFHODZmQzJkczFXcFJrSUtrYkRZRFU&usp=sharing)
-* [Documents]({{site.pagebaseurl}}/documents.html)
-   * [Design Brainstorming]({{site.pagebaseurl}}/brainstorming.html)
-   * [Drawings, Schematics, and data sheets]({{site.pagebaseurl}}/Drawings-Schematics-Data-Sheets.html)
-   * [Software]({{site.pagebaseurl}}/Software.html)
-   * [Presentations]({{site.pagebaseurl}}/Presentations.html)
+* [Documents](https://drive.google.com/open?id=0B48Hm2AZ_VIRfkZ3d2tHUzVhOTY2aF91OWZ5TnJvdlJaVHlaVk5OanZMLW8tamh4NWk4d1E&authuser=0)
 
