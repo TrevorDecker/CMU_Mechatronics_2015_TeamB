@@ -5,9 +5,18 @@ layout: default
 
 # Documents #
 
-The majority of our engineering work can be found in our [github repo]({{site.codeurl}}). This includes our firmware, simulations, and CAD models. For any other documentation, you've come to the right place.
+The majority of our engineering work can be found in our mechanical and software repositories:
+
+* [Software (github)]({{site.codeurl}}).
+* [Mechanical (GrabCad)](https://grabcad.com/library/cmu-mechatronics-2015-team-b-monkey-bot-1)
+
+## Design Documents and Presentations
 
 * [Design Proposal]({{site.baseurl}}/docs/TeamB_DesignProposal.pdf)
+* [Mid-Semester Presentation](https://docs.google.com/presentation/d/1lWlY1oNO3qcYeGmug9A7smSj7dXbPisj6l8bZFO_b-I/edit?usp=sharing)
+
+## Individual Lab Reports (ILRs)
+
 * [Steph ILR 1]({{site.baseurl}}/docs/TeamB_swc1_ILR01.pdf)
 * [Steph ILR 2]({{site.baseurl}}/docs/TeamB_swc1_ILR02.pdf)
 * [Steph ILR 3]({{site.baseurl}}/docs/TeamB_swc1_ILR03.pdf)
@@ -28,3 +37,19 @@ The majority of our engineering work can be found in our [github repo]({{site.co
 * [Ian Rosado ILR 5]({{site.baseurl}}/docs/TeamB_irosado_ILR05.pdf)
 * [Ian Rosado ILR 6]({{site.baseurl}}/docs/TeamB_irosado_ILR06.pdf)
 * [Ian Rosado ILR 7]({{site.baseurl}}/docs/TeamB_irosado_ILR07.pdf)
+
+## Brainstorming
+
+A good deal of our intial design and brainstorming happens on the whiteboard.<br />
+
+<img src="{{site.baseurl}}/images/design2.jpg" width="500px" height="375px" />
+Early designs for the gripper.<br />
+
+<img src="{{site.baseurl}}/images/design4.jpg"  width="500px" height="375px" />
+We experimented with a variety of ways to move around the window.<br />
+
+<img src="{{site.baseurl}}/images/design5.jpg"  width="500px" height="375px" />
+A somewhat complete design for reaching all areas of the window.<br />
+
+<img src="{{site.baseurl}}/images/design6.jpg"  width="500px" height="375px" />
+We toyed with 2 different methods for driving the extension arm - belt or lead screw.<br />
