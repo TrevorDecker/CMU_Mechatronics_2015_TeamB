@@ -38,6 +38,13 @@ The majority of our engineering work can be found in our mechanical and software
 * [Ian Rosado ILR 6]({{site.baseurl}}/docs/TeamB_irosado_ILR06.pdf)
 * [Ian Rosado ILR 7]({{site.baseurl}}/docs/TeamB_irosado_ILR07.pdf)
 
+# Schematics and Data Sheets #
+
+* [Motor Controller L6470](https://drive.google.com/open?id=0BzFYMWn3wz6CN0lwcEZ3Z1UwTjg&authuser=0)
+* [ST Discovery Board](https://drive.google.com/open?id=0BzFYMWn3wz6CejhDM2w5S3VmdTQ&authuser=0)
+* [Versa Plantary Gear Boxl](https://drive.google.com/open?id=0BzFYMWn3wz6CNS1HY05BRDY0R0U&authuser=0)
+* [Stepper Motor Control Board ](https://drive.google.com/open?id=0BzFYMWn3wz6CaUxUbDVGYVY0LTA&authuser=0)
+
 ## Brainstorming
 
 A good deal of our intial design and brainstorming happens on the whiteboard.<br />
