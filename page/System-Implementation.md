@@ -5,8 +5,11 @@ layout: default
 
 # System Implementation #
 
+## Mechanical ##
+
 ###Frame Gripper###
-A gripper is used to hold the robot to the window frame made of 80/20 aluminum. The gripper needs to be able to support the whole weight of the robot and as a result, it needs to be long to cover enough surface area. The gripper currently has two plates, connected with a lead screw. With a motor, the lead screw drives the plates together to secure the robot onto the frame. 
+A gripper is used to hold the robot to the window frame made of 80/20 aluminum. The gripper needs to be able to support the whole weight of the robot and as a result, it needs to be long to cover enough surface area. The gripper currently has two plates, connected with a lead screw. With a motor, the lead screw drives the plates together to secure the robot onto the frame.
+
 ###Extending Arm###
 A core feature of our design requires moving a cleaning unit horizontally on the window. We have built an extending unit that the cleaning unit can move on. To adjust for different size windows, two blocks with bearings allow the extending arms to slide past each other adjust between the 3 and 5 foot bounds of window size. This slide is powered by an ACME lead screw attached to a motor. The motor and the end of the lead screw are mounted to plates inside the extending arm. Limit switches can be used to zero position after the arm has changed length. The arm will be made of 2in x 2in, thin-walled aluminum to help maintain stiffness. 
 
@@ -15,3 +18,7 @@ The actual cleaning unit that will translate from side to side on the telescopin
 
 ###Pivoting Unit###
 The pivoting joint allows movement in the plane parallel to the window. This allows us to move the whole extension arm horizontally and diagnolly to climb up and down the window. This movement will be realized through the implimentation of a planetary gearbox with a shaft and worm gear that will allow us to pivot both units at the same time with one motor.
+
+## Software ##
+
+We have chosen to build up our control system on a STM32 F4 Discovery board. This prototype board has a 32-bit ARM Cortex M4 processor, lots of on-chip IO (UARTs, SPI, I2C, PWM in and out, GPIO), and a built in screen. This board can be programmed using the [ARM GCC Embedded](https://launchpad.net/gcc-arm-embedded) toolchain and debugged in hardware with GDB. ST provides example source code, although they do not officially support GCC or provide makefiles.

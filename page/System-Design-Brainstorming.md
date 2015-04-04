@@ -18,3 +18,6 @@ A good deal of our intial design and brainstorming happens on the whiteboard.<br
 
 [![]({{site.baseurl}}/images/design6.jpg)]({{site.baseurl}}/images/design6.jpg)
 <br />We toyed with 2 different methods for driving the extension arm - belt or lead screw.<br />
+
+[![]({{site.baseurl}}/images/design7.jpg)]({{site.baseurl}}/images/design7.jpg)
+<br />An initial prototype demonstrating our mechanical systems.<br />
