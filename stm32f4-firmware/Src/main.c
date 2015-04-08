@@ -45,7 +45,6 @@ int main(void)
   SystemClock_Config();
 
   // setup to generate a fixed PWM signal
-  uint32_t uwPrescalerValue = ((SystemCoreClock /2) / 2000) - 1;
   TIM_HandleTypeDef TimHandle;
   /*##-1- Configure the TIM peripheral #######################################*/ 
   /* Initialize TIMx peripheral as follow:
@@ -54,9 +53,10 @@ int main(void)
        + ClockDivision = 0
        + Counter direction = Up
   */
-  TimHandle.Instance = TIMx;
+  __TIM3_CLK_ENABLE();
+  TimHandle.Instance = TIM3;
   TimHandle.Init.Period        = 65535;
-  TimHandle.Init.Prescaler     = uwPrescalerValue;
+  TimHandle.Init.Prescaler     = 2;
   TimHandle.Init.ClockDivision = 0;
   TimHandle.Init.CounterMode   = TIM_COUNTERMODE_UP;
   if(HAL_TIM_OC_Init(&TimHandle) != HAL_OK)
@@ -67,22 +67,32 @@ int main(void)
   /*##-2- Configure the Output Compare channels #########################################*/ 
   /* Common configuration for all channels */
   TIM_OC_InitTypeDef sConfig;
-  sConfig.OCMode     = TIM_OCMODE_ACTIVE;
-  sConfig.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfig.OCMode     = TIM_OCMODE_PWM1;
+  sConfig.OCPolarity = TIM_OCPOLARITY_LOW;
   /* Set the pulse (delay1)  value for channel 1 */
-  sConfig.Pulse = 1000;  
-  if(HAL_TIM_OC_ConfigChannel(&TimHandle, &sConfig, TIM_CHANNEL_1) != HAL_OK)
+  sConfig.Pulse = 20000;  
+  if(HAL_TIM_PWM_ConfigChannel(&TimHandle, &sConfig, TIM_CHANNEL_1) != HAL_OK)
   {
     /* Configuration Error */
     Error_Handler();
   }
   /*##-4- Start signals generation ###########################################*/ 
   /* Start channel 1 in Output compare mode */
-  if(HAL_TIM_OC_Start(&TimHandle, TIM_CHANNEL_1) != HAL_OK)
+  if(HAL_TIM_PWM_Start(&TimHandle, TIM_CHANNEL_1) != HAL_OK)
   {
     /* Starting Error */
     Error_Handler();
   }
+
+  // put Timer 3 Channel 1 on PB4
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  GPIO_InitTypeDef gpiob_init;
+  gpiob_init.Pin = GPIO_PIN_4;
+  gpiob_init.Mode = GPIO_MODE_AF_PP;
+  gpiob_init.Pull = GPIO_NOPULL;
+  gpiob_init.Speed = GPIO_SPEED_FAST;
+  gpiob_init.Alternate = GPIO_AF2_TIM3;
+  HAL_GPIO_Init(GPIOB, &gpiob_init);
 
   // pin 13 output setup
   __HAL_RCC_GPIOG_CLK_ENABLE();
@@ -108,6 +118,8 @@ int main(void)
     LCD_LOG_ClearTextZone();
     LCD_UsrLog("Hello world!\n");
     LCD_UsrLog("Blink count: %d\n", blink_count);
+    LCD_UsrLog("TIM5->CNT: %d\n", TIM5->CNT);
+    LCD_UsrLog("TIM5->CCR3: %d\n", TIM5->CCR1);
 
     // toggle pin 13
     HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);
