@@ -128,7 +128,7 @@ newlib:
 ifeq ($(wildcard $(NEWLIB_DIR)/Makefile), )
 	cd $(NEWLIB_DIR) && ./configure --target arm-none-eabi --disable-newlib-supplied-syscalls
 endif
-	cd $(NEWLIB_DIR)/$(NEWLIB_BRANCH_DIR) && $(MAKE)
+	cd $(NEWLIB_DIR) &&  $(MAKE)
 	cp -r $(NEWLIB_DIR)/$(NEWLIB_BRANCH_DIR) ./
 
 libstm32f4.a: $(LIBOBJS)
