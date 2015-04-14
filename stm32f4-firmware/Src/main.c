@@ -70,7 +70,7 @@ int main(void)
   sConfig.OCMode     = TIM_OCMODE_PWM1;
   sConfig.OCPolarity = TIM_OCPOLARITY_LOW;
   /* Set the pulse (delay1)  value for channel 1 */
-  sConfig.Pulse = 20000;  
+  sConfig.Pulse = 0;  
   if(HAL_TIM_PWM_ConfigChannel(&TimHandle, &sConfig, TIM_CHANNEL_1) != HAL_OK)
   {
     /* Configuration Error */
@@ -84,24 +84,39 @@ int main(void)
     Error_Handler();
   }
 
+  GPIO_InitTypeDef gpio_init;
   // put Timer 3 Channel 1 on PB4
   __HAL_RCC_GPIOB_CLK_ENABLE();
-  GPIO_InitTypeDef gpiob_init;
-  gpiob_init.Pin = GPIO_PIN_4;
-  gpiob_init.Mode = GPIO_MODE_AF_PP;
-  gpiob_init.Pull = GPIO_NOPULL;
-  gpiob_init.Speed = GPIO_SPEED_FAST;
-  gpiob_init.Alternate = GPIO_AF2_TIM3;
-  HAL_GPIO_Init(GPIOB, &gpiob_init);
+  gpio_init.Pin = GPIO_PIN_4;
+  gpio_init.Mode = GPIO_MODE_AF_PP;
+  gpio_init.Pull = GPIO_NOPULL;
+  gpio_init.Speed = GPIO_SPEED_FAST;
+  gpio_init.Alternate = GPIO_AF2_TIM3;
+  HAL_GPIO_Init(GPIOB, &gpio_init);
+
+  // set up PB2/3 as general digital IO
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  gpio_init.Pin = GPIO_PIN_2 | GPIO_PIN_3;
+  gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
+  gpio_init.Pull = GPIO_NOPULL;
+  gpio_init.Speed = GPIO_SPEED_FAST;
+  HAL_GPIO_Init(GPIOB, &gpio_init);
+
+  // set up PA0 for button
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  gpio_init.Pin = GPIO_PIN_0;
+  gpio_init.Mode = GPIO_MODE_INPUT;
+  gpio_init.Pull = GPIO_NOPULL;
+  gpio_init.Speed = GPIO_SPEED_FAST;
+  HAL_GPIO_Init(GPIOA, &gpio_init);
 
   // pin 13 output setup
   __HAL_RCC_GPIOG_CLK_ENABLE();
-  GPIO_InitTypeDef gpiog_init;
-  gpiog_init.Pin = GPIO_PIN_13;
-  gpiog_init.Mode = GPIO_MODE_OUTPUT_PP;
-  gpiog_init.Pull = GPIO_NOPULL;
-  gpiog_init.Speed = GPIO_SPEED_FAST;
-  HAL_GPIO_Init(GPIOG, &gpiog_init);
+  gpio_init.Pin = GPIO_PIN_13;
+  gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
+  gpio_init.Pull = GPIO_NOPULL;
+  gpio_init.Speed = GPIO_SPEED_FAST;
+  HAL_GPIO_Init(GPIOG, &gpio_init);
 
   // setup lcd log
   LCD_LOG_Init();
@@ -109,7 +124,12 @@ int main(void)
   sprintf(&header_buffer, "Monkey Bot %s", VERSION_STRING);
   LCD_LOG_SetHeader(&header_buffer);
 
-  uint32_t blink_count = 0;
+  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET);
+
+  // state variables
+  int motor_button_state = 0; // 1 = pressed
+  int motor_button_state_last = 0;
+  int motor_direction = 1; // 0 = reverse, 1 = off, 2 = forward
 
   /* Infinite loop */
   while (1)
@@ -117,17 +137,42 @@ int main(void)
     // update status
     LCD_LOG_ClearTextZone();
     LCD_UsrLog("Hello world!\n");
-    LCD_UsrLog("Blink count: %d\n", blink_count);
-    LCD_UsrLog("TIM5->CNT: %d\n", TIM5->CNT);
-    LCD_UsrLog("TIM5->CCR3: %d\n", TIM5->CCR1);
+    if(motor_direction == 0) {
+      LCD_UsrLog("Motor state: reverse\n");
+    } else if (motor_direction == 1) {
+      LCD_UsrLog("Motor state: off\n");
+    } else {
+      LCD_UsrLog("Motor state: forward\n");
+    }
 
-    // toggle pin 13
-    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);
-    HAL_Delay(1000);
-    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET);
-    HAL_Delay(1000);
+    motor_button_state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
+    if(motor_button_state == 1 && motor_button_state_last == 0) {
+      motor_direction = (motor_direction + 1) % 3; // increment with wrap
+    }
+    motor_button_state_last = motor_button_state;
 
-    blink_count++;
+    // set motor output
+    if(motor_direction == 0) {
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET);
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);
+      sConfig.Pulse = 20000;
+      HAL_TIM_PWM_ConfigChannel(&TimHandle, &sConfig, TIM_CHANNEL_1);
+      HAL_TIM_PWM_Start(&TimHandle, TIM_CHANNEL_1);
+    } else if (motor_direction == 1) {
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);
+      sConfig.Pulse = 0;
+      HAL_TIM_PWM_ConfigChannel(&TimHandle, &sConfig, TIM_CHANNEL_1);
+      HAL_TIM_PWM_Start(&TimHandle, TIM_CHANNEL_1);
+    } else {
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);
+      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_SET);
+      sConfig.Pulse = 20000;
+      HAL_TIM_PWM_ConfigChannel(&TimHandle, &sConfig, TIM_CHANNEL_1);
+      HAL_TIM_PWM_Start(&TimHandle, TIM_CHANNEL_1);
+    }
+
+    HAL_Delay(50);
   }
 }
 
