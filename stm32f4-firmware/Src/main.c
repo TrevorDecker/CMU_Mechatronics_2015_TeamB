@@ -8,6 +8,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "vnh5019.h"
 
 #define VERSION_STRING "0.1"
 
@@ -44,63 +45,39 @@ int main(void)
   /* Configure the System clock to 180 MHz */
   SystemClock_Config();
 
-  // setup to generate a fixed PWM signal
-  TIM_HandleTypeDef TimHandle;
-  /*##-1- Configure the TIM peripheral #######################################*/ 
-  /* Initialize TIMx peripheral as follow:
-       + Prescaler = (SystemCoreClock/2)/2000
-       + Period = 65535
-       + ClockDivision = 0
-       + Counter direction = Up
-  */
+  // init all the timer and gpio clocks we're using
   __TIM3_CLK_ENABLE();
-  TimHandle.Instance = TIM3;
-  TimHandle.Init.Period        = 65535;
-  TimHandle.Init.Prescaler     = 2;
-  TimHandle.Init.ClockDivision = 0;
-  TimHandle.Init.CounterMode   = TIM_COUNTERMODE_UP;
-  if(HAL_TIM_OC_Init(&TimHandle) != HAL_OK)
-  {
-    /* Initialization Error */
-    Error_Handler();
-  }
-  /*##-2- Configure the Output Compare channels #########################################*/ 
-  /* Common configuration for all channels */
-  TIM_OC_InitTypeDef sConfig;
-  sConfig.OCMode     = TIM_OCMODE_PWM1;
-  sConfig.OCPolarity = TIM_OCPOLARITY_LOW;
-  /* Set the pulse (delay1)  value for channel 1 */
-  sConfig.Pulse = 0;  
-  if(HAL_TIM_PWM_ConfigChannel(&TimHandle, &sConfig, TIM_CHANNEL_1) != HAL_OK)
-  {
-    /* Configuration Error */
-    Error_Handler();
-  }
-  /*##-4- Start signals generation ###########################################*/ 
-  /* Start channel 1 in Output compare mode */
-  if(HAL_TIM_PWM_Start(&TimHandle, TIM_CHANNEL_1) != HAL_OK)
-  {
-    /* Starting Error */
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOF_CLK_ENABLE();
+  __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
+
+  vnh5019_hw_assign_t motor_hw_assign;
+  vnh5019_state_t motor_pivot_l_state;
+  vnh5019_state_t motor_pivot_r_state;
+
+  // setup left pivot motor controller
+  motor_hw_assign.ina_gpio = GPIOB;
+  motor_hw_assign.ina_pin = GPIO_PIN_2;
+  motor_hw_assign.inb_gpio = GPIOB;
+  motor_hw_assign.inb_pin = GPIO_PIN_3;
+  motor_hw_assign.pwm_gpio = GPIOB;
+  motor_hw_assign.pwm_pin = GPIO_PIN_4;
+  motor_hw_assign.pwm_af = GPIO_AF2_TIM3;
+  motor_hw_assign.cs_gpio = 0;
+  motor_hw_assign.cs_pin = 0;
+  motor_hw_assign.cs_af = 0;
+  motor_hw_assign.timer_instance = TIM3;
+  motor_hw_assign.timer_channel = TIM_CHANNEL_1;
+  if(vnh5019_init(&motor_pivot_l_state, &motor_hw_assign) != 0) {
     Error_Handler();
   }
 
   GPIO_InitTypeDef gpio_init;
-  // put Timer 3 Channel 1 on PB4
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  gpio_init.Pin = GPIO_PIN_4;
-  gpio_init.Mode = GPIO_MODE_AF_PP;
-  gpio_init.Pull = GPIO_NOPULL;
-  gpio_init.Speed = GPIO_SPEED_FAST;
-  gpio_init.Alternate = GPIO_AF2_TIM3;
-  HAL_GPIO_Init(GPIOB, &gpio_init);
-
-  // set up PB2/3 as general digital IO
-  __HAL_RCC_GPIOB_CLK_ENABLE();
-  gpio_init.Pin = GPIO_PIN_2 | GPIO_PIN_3;
-  gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
-  gpio_init.Pull = GPIO_NOPULL;
-  gpio_init.Speed = GPIO_SPEED_FAST;
-  HAL_GPIO_Init(GPIOB, &gpio_init);
 
   // set up PA0 for button
   __HAL_RCC_GPIOA_CLK_ENABLE();
@@ -124,7 +101,7 @@ int main(void)
   sprintf(&header_buffer, "Monkey Bot %s", VERSION_STRING);
   LCD_LOG_SetHeader(&header_buffer);
 
-  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);
 
   // state variables
   int motor_button_state = 0; // 1 = pressed
@@ -153,23 +130,11 @@ int main(void)
 
     // set motor output
     if(motor_direction == 0) {
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET);
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);
-      sConfig.Pulse = 20000;
-      HAL_TIM_PWM_ConfigChannel(&TimHandle, &sConfig, TIM_CHANNEL_1);
-      HAL_TIM_PWM_Start(&TimHandle, TIM_CHANNEL_1);
+      vnh5019_set(&motor_pivot_l_state, 20000, FORWARD);
     } else if (motor_direction == 1) {
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET);
-      sConfig.Pulse = 0;
-      HAL_TIM_PWM_ConfigChannel(&TimHandle, &sConfig, TIM_CHANNEL_1);
-      HAL_TIM_PWM_Start(&TimHandle, TIM_CHANNEL_1);
+      vnh5019_set(&motor_pivot_l_state, 0, FORWARD);
     } else {
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_RESET);
-      HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_SET);
-      sConfig.Pulse = 20000;
-      HAL_TIM_PWM_ConfigChannel(&TimHandle, &sConfig, TIM_CHANNEL_1);
-      HAL_TIM_PWM_Start(&TimHandle, TIM_CHANNEL_1);
+      vnh5019_set(&motor_pivot_l_state, 20000, REVERSE);
     }
 
     HAL_Delay(50);
@@ -251,7 +216,8 @@ static void SystemClock_Config(void)
   */
 static void Error_Handler(void)
 {
-  /* User may add here some code to deal with this error */
+  // turn the on board LED on to indicate error
+  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET);
   while(1)
   {
   }
