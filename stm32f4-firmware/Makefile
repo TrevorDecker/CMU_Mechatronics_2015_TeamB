@@ -106,7 +106,7 @@ MCFLAGS = -mcpu=cortex-m4 -mthumb -mlittle-endian -mfpu=fpv4-sp-d16 -mfloat-abi=
 OPTIMIZE = -Os
 # combine flags
 CFLAGS = $(MCFLAGS) $(OPTIMIZE) $(DEFS)
-CFLAGS += -Wl,--gc-sections -Wl,-Map=main.map -std=c99
+CFLAGS += -Wl,--gc-sections -Wl,-Map=main.map -std=c99 -g
 CFLAGS += $(addprefix -I ,$(INCLUDEDIRS))
 CFLAGS += -include stm32f4xx_hal_conf.h # apparently everyone needs this config
 AFLAGS = $(MCFLAGS)
