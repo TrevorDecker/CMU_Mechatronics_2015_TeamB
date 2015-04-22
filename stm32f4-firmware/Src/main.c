@@ -16,6 +16,7 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef AdcHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
@@ -41,6 +42,7 @@ int main(void)
        - Low Level Initialization
      */
   HAL_Init();
+  HAL_Delay(2000);
 
   /* Configure the System clock to 180 MHz */
   SystemClock_Config();
@@ -152,6 +154,85 @@ int main(void)
   gpio_init.Speed = GPIO_SPEED_FAST;
   HAL_GPIO_Init(GPIOG, &gpio_init);
 
+  //////////////////////////////////////////////////////////////////////////////
+
+  // set up PC4 as ADC14 in
+  gpio_init.Pin = GPIO_PIN_4;
+  gpio_init.Mode = GPIO_MODE_ANALOG;
+  gpio_init.Pull = GPIO_NOPULL;
+  gpio_init.Speed = GPIO_SPEED_FAST;
+  HAL_GPIO_Init(GPIOC, &gpio_init);
+
+  // set up PC5 as ADC15 in
+  gpio_init.Pin = GPIO_PIN_5;
+  gpio_init.Mode = GPIO_MODE_ANALOG;
+  gpio_init.Pull = GPIO_NOPULL;
+  gpio_init.Speed = GPIO_SPEED_FAST;
+  HAL_GPIO_Init(GPIOC, &gpio_init);
+
+  volatile uint32_t ADCBuffer[6]= {0xAAAA,
+                                   0xAAAA,
+                                   0xAAAA,
+                                   0xAAAA,
+                                   0xAAAA,
+                                   0xAAAA};
+
+  /*##-1- Configure the ADC peripheral #######################################*/
+  AdcHandle.Instance = ADCx;
+  
+  AdcHandle.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV2;
+  AdcHandle.Init.Resolution = ADC_RESOLUTION12b;
+  AdcHandle.Init.ScanConvMode = DISABLE;
+  AdcHandle.Init.ContinuousConvMode = ENABLE;
+  AdcHandle.Init.DiscontinuousConvMode = DISABLE;
+  AdcHandle.Init.NbrOfDiscConversion = 0;
+  AdcHandle.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  AdcHandle.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
+  AdcHandle.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  AdcHandle.Init.NbrOfConversion = 1;
+  AdcHandle.Init.DMAContinuousRequests = ENABLE;
+  AdcHandle.Init.EOCSelection = DISABLE;
+      
+  if(HAL_ADC_Init(&AdcHandle) != HAL_OK)
+  {
+    /* Initialization Error */
+    Error_Handler(); 
+  }
+  
+  /*##-2- Configure ADC regular channel ######################################*/  
+  ADC_ChannelConfTypeDef sConfig;
+
+  sConfig.Channel = ADC_CHANNEL_14;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  sConfig.Offset = 0;
+  
+  if(HAL_ADC_ConfigChannel(&AdcHandle, &sConfig) != HAL_OK)
+  {
+    /* Channel Configuration Error */
+    Error_Handler(); 
+  }
+
+  // sConfig.Channel = ADC_CHANNEL_15;
+  // sConfig.Rank = 2;
+  // sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  // sConfig.Offset = 0;
+  
+  // if(HAL_ADC_ConfigChannel(&AdcHandle, &sConfig) != HAL_OK)
+  // {
+  //   /* Channel Configuration Error */
+  //   Error_Handler(); 
+  // }
+
+  /*##-3- Start the conversion process and enable interrupt ##################*/  
+  if(HAL_ADC_Start_DMA(&AdcHandle, (uint32_t *)&ADCBuffer, 1) != HAL_OK)
+  {
+    /* Start Conversation Error */
+    Error_Handler(); 
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+
 
   // setup lcd log
   LCD_LOG_Init();
@@ -180,6 +261,14 @@ int main(void)
       LCD_UsrLog("Motor state: forward\n");
     }
 
+
+    char adc_readout_buffer[64];
+    sprintf(&adc_readout_buffer, "ADC14: 0x%x\n", ADCBuffer[0]);
+    LCD_UsrLog(&adc_readout_buffer);
+    sprintf(&adc_readout_buffer, "ADC15: 0x%x\n", ADCBuffer[1]);
+    LCD_UsrLog(&adc_readout_buffer);
+
+
     motor_button_state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
     if(motor_button_state == 1 && motor_button_state_last == 0) {
       motor_direction = (motor_direction + 1) % 3; // increment with wrap
@@ -207,6 +296,7 @@ int main(void)
     HAL_Delay(50);
   }
 }
+
 
 /**
   * @brief  System Clock Configuration
@@ -276,6 +366,107 @@ static void SystemClock_Config(void)
   }
 }
 
+
+/**
+  * @brief ADC MSP Initialization 
+  *        This function configures the hardware resources used in this example: 
+  *           - Peripheral's clock enable
+  *           - Peripheral's GPIO Configuration  
+  * @param huart: UART handle pointer
+  * @retval None
+  */
+void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
+{
+  // GPIO_InitTypeDef          GPIO_InitStruct;
+  static DMA_HandleTypeDef  hdma_adc;
+  
+  /*##-1- Enable peripherals and GPIO Clocks #################################*/
+  /* Enable GPIO clock */
+  // ADCx_CHANNEL_GPIO_CLK_ENABLE();
+  /* ADC3 Periph clock enable */
+  ADCx_CLK_ENABLE();
+  /* Enable DMA2 clock */
+  DMAx_CLK_ENABLE(); 
+  
+  /*##-2- Configure peripheral GPIO ##########################################*/ 
+  /* ADC3 Channel8 GPIO pin configuration */
+  // GPIO_InitStruct.Pin = ADCx_CHANNEL_PIN;
+  // GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  // GPIO_InitStruct.Pull = GPIO_NOPULL;
+  // HAL_GPIO_Init(ADCx_CHANNEL_GPIO_PORT, &GPIO_InitStruct);
+  
+  /*##-3- Configure the DMA streams ##########################################*/
+  /* Set the parameters to be configured */
+  hdma_adc.Instance = ADCx_DMA_STREAM;
+  
+  hdma_adc.Init.Channel  = ADCx_DMA_CHANNEL;
+  hdma_adc.Init.Direction = DMA_PERIPH_TO_MEMORY;
+  hdma_adc.Init.PeriphInc = DMA_PINC_DISABLE;
+  hdma_adc.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_adc.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+  hdma_adc.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+  hdma_adc.Init.Mode = DMA_CIRCULAR;
+  hdma_adc.Init.Priority = DMA_PRIORITY_HIGH;
+  hdma_adc.Init.FIFOMode = DMA_FIFOMODE_DISABLE;         
+  hdma_adc.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_HALFFULL;
+  hdma_adc.Init.MemBurst = DMA_MBURST_SINGLE;
+  hdma_adc.Init.PeriphBurst = DMA_PBURST_SINGLE; 
+
+  HAL_DMA_Init(&hdma_adc);
+    
+  /* Associate the initialized DMA handle to the the ADC handle */
+  __HAL_LINKDMA(hadc, DMA_Handle, hdma_adc);
+
+  /*##-4- Configure the NVIC for DMA #########################################*/
+  /* NVIC configuration for DMA transfer complete interrupt */
+  HAL_NVIC_SetPriority(ADCx_DMA_IRQn, 0, 0);   
+  HAL_NVIC_EnableIRQ(ADCx_DMA_IRQn);
+}
+
+
+/**
+  * @brief ADC MSP De-Initialization 
+  *        This function frees the hardware resources used in this example:
+  *          - Disable the Peripheral's clock
+  *          - Revert GPIO to their default state
+  * @param hadc: ADC handle pointer
+  * @retval None
+  */
+void HAL_ADC_MspDeInit(ADC_HandleTypeDef *hadc)
+{
+  static DMA_HandleTypeDef  hdma_adc;
+  
+  /*##-1- Reset peripherals ##################################################*/
+  __ADC_FORCE_RESET();
+  __ADC_RELEASE_RESET();
+
+  /*##-2- Disable peripherals and GPIO Clocks ################################*/
+  /* De-initialize the ADC3 Channel8 GPIO pin */
+  // HAL_GPIO_DeInit(ADCx_CHANNEL_GPIO_PORT, ADCx_CHANNEL_PIN);
+  
+  /*##-3- Disable the DMA Streams ############################################*/
+  /* De-Initialize the DMA Stream associate to transmission process */
+  HAL_DMA_DeInit(&hdma_adc); 
+    
+  /*##-4- Disable the NVIC for DMA ###########################################*/
+  HAL_NVIC_DisableIRQ(ADCx_DMA_IRQn);
+}
+
+
+/**
+  * @brief  Conversion complete callback in non blocking mode 
+  * @param  AdcHandle : AdcHandle handle
+  * @note   This example shows a simple way to report end of conversion, and 
+  *         you can add your own implementation.    
+  * @retval None
+  */
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* AdcHandle)
+{
+  /* Turn LED1 on: Transfer process is correct */
+  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET);
+}
+
+
 /**
   * @brief  This function is executed in case of error occurrence.
   * @param  None
@@ -289,6 +480,7 @@ static void Error_Handler(void)
   {
   }
 }
+
 
 #ifdef  USE_FULL_ASSERT
 /**
