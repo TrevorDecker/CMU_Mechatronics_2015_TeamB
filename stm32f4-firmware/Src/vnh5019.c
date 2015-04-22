@@ -11,6 +11,7 @@
  * state must be unique to each set of hardware assignments but can be blank.
  * The hardware assignments must have all fields complete, but this struct can
  * be re-used for multiple initializers since it is copied into the state.
+ * NOTE: Calling code is responsible for starting the GPIO and Timer clocks.
  * @param state: controller state structure.
  * @param hw_assign: hardware assignment structure that should be attached to
  *                   this state.
@@ -31,8 +32,8 @@ int vnh5019_init(vnh5019_state_t *state, vnh5019_hw_assign_t *hw_assign) {
   */
   state->timer_handle.Instance = state->hw_assign.timer_instance;
   state->timer_handle.Init.Period        = 65535;
-  state->timer_handle.Init.Prescaler     = 2;
-  state->timer_handle.Init.ClockDivision = 0;
+  state->timer_handle.Init.Prescaler     = 1;
+  state->timer_handle.Init.ClockDivision = TIM_CLOCKDIVISION_DIV2;
   state->timer_handle.Init.CounterMode   = TIM_COUNTERMODE_UP;
   if(HAL_TIM_OC_Init(&(state->timer_handle)) != HAL_OK) {
     return -1;
@@ -43,7 +44,7 @@ int vnh5019_init(vnh5019_state_t *state, vnh5019_hw_assign_t *hw_assign) {
      + pulse sets duty cycle out of 
    */ 
   state->timer_oc_config.OCMode = TIM_OCMODE_PWM1;
-  state->timer_oc_config.OCPolarity = TIM_OCPOLARITY_LOW;
+  state->timer_oc_config.OCPolarity = TIM_OCPOLARITY_HIGH;
 
   /* Configure GPIO pins we are using for output. */
   GPIO_InitTypeDef gpio_init;
