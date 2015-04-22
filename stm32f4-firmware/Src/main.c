@@ -8,6 +8,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "vnh5019.h"
 
 #define VERSION_STRING "0.1"
 
@@ -15,6 +16,7 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 static void Error_Handler(void);
@@ -43,15 +45,113 @@ int main(void)
   /* Configure the System clock to 180 MHz */
   SystemClock_Config();
 
+  // init all the timer and gpio clocks we're using
+  __TIM3_CLK_ENABLE();
+  __TIM9_CLK_ENABLE();
+  __TIM10_CLK_ENABLE();
+  // __TIM11_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOF_CLK_ENABLE();
+  __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOI_CLK_ENABLE();
+  __HAL_RCC_GPIOJ_CLK_ENABLE();
+  __HAL_RCC_GPIOK_CLK_ENABLE();
+
+  vnh5019_hw_assign_t motor_hw_assign;
+  vnh5019_state_t motor_pivot_l_state;
+  vnh5019_state_t motor_pivot_r_state;
+  vnh5019_state_t motor_3_state;
+  vnh5019_state_t motor_4_state;
+
+  // setup left pivot motor controller
+  motor_hw_assign.ina_gpio = GPIOF;
+  motor_hw_assign.ina_pin = GPIO_PIN_8;
+  motor_hw_assign.inb_gpio = GPIOF;
+  motor_hw_assign.inb_pin = GPIO_PIN_9;
+  motor_hw_assign.pwm_gpio = GPIOE;
+  motor_hw_assign.pwm_pin = GPIO_PIN_5;
+  motor_hw_assign.pwm_af = GPIO_AF3_TIM9;
+  motor_hw_assign.cs_gpio = 0;
+  motor_hw_assign.cs_pin = 0;
+  motor_hw_assign.cs_af = 0;
+  motor_hw_assign.timer_instance = TIM9;
+  motor_hw_assign.timer_channel = TIM_CHANNEL_1;
+  if(vnh5019_init(&motor_pivot_l_state, &motor_hw_assign) != 0) {
+    Error_Handler();
+  }
+
+  // setup right pivot motor controller
+  motor_hw_assign.ina_gpio = GPIOE;
+  motor_hw_assign.ina_pin = GPIO_PIN_3;
+  motor_hw_assign.inb_gpio = GPIOE;
+  motor_hw_assign.inb_pin = GPIO_PIN_4;
+  motor_hw_assign.pwm_gpio = GPIOE;
+  motor_hw_assign.pwm_pin = GPIO_PIN_6;
+  motor_hw_assign.pwm_af = GPIO_AF3_TIM9;
+  motor_hw_assign.cs_gpio = 0;
+  motor_hw_assign.cs_pin = 0;
+  motor_hw_assign.cs_af = 0;
+  motor_hw_assign.timer_instance = TIM9;
+  motor_hw_assign.timer_channel = TIM_CHANNEL_2;
+  if(vnh5019_init(&motor_pivot_r_state, &motor_hw_assign) != 0) {
+    Error_Handler();
+  }
+
+  // setup 3rd motor controller
+  motor_hw_assign.ina_gpio = GPIOG;
+  motor_hw_assign.ina_pin = GPIO_PIN_2;
+  motor_hw_assign.inb_gpio = GPIOG;
+  motor_hw_assign.inb_pin = GPIO_PIN_3;
+  motor_hw_assign.pwm_gpio = GPIOF;
+  motor_hw_assign.pwm_pin = GPIO_PIN_6;
+  motor_hw_assign.pwm_af = GPIO_AF3_TIM10;
+  motor_hw_assign.cs_gpio = 0;
+  motor_hw_assign.cs_pin = 0;
+  motor_hw_assign.cs_af = 0;
+  motor_hw_assign.timer_instance = TIM10;
+  motor_hw_assign.timer_channel = TIM_CHANNEL_1;
+  if(vnh5019_init(&motor_3_state, &motor_hw_assign) != 0) {
+    Error_Handler();
+  }
+
+  // setup 4th motor controller
+  motor_hw_assign.ina_gpio = GPIOD;
+  motor_hw_assign.ina_pin = GPIO_PIN_4;
+  motor_hw_assign.inb_gpio = GPIOD;
+  motor_hw_assign.inb_pin = GPIO_PIN_5;
+  motor_hw_assign.pwm_gpio = GPIOC;
+  motor_hw_assign.pwm_pin = GPIO_PIN_8;
+  motor_hw_assign.pwm_af = GPIO_AF2_TIM3;
+  motor_hw_assign.cs_gpio = 0;
+  motor_hw_assign.cs_pin = 0;
+  motor_hw_assign.cs_af = 0;
+  motor_hw_assign.timer_instance = TIM3;
+  motor_hw_assign.timer_channel = TIM_CHANNEL_3;
+  if(vnh5019_init(&motor_4_state, &motor_hw_assign) != 0) {
+    Error_Handler();
+  }
+
+  GPIO_InitTypeDef gpio_init;
+
+  // set up PA0 for button
+  gpio_init.Pin = GPIO_PIN_0;
+  gpio_init.Mode = GPIO_MODE_INPUT;
+  gpio_init.Pull = GPIO_NOPULL;
+  gpio_init.Speed = GPIO_SPEED_FAST;
+  HAL_GPIO_Init(GPIOA, &gpio_init);
 
   // pin 13 output setup
-  __HAL_RCC_GPIOG_CLK_ENABLE();
-  GPIO_InitTypeDef gpiog_init;
-  gpiog_init.Pin = GPIO_PIN_13;
-  gpiog_init.Mode = GPIO_MODE_OUTPUT_PP;
-  gpiog_init.Pull = GPIO_NOPULL;
-  gpiog_init.Speed = GPIO_SPEED_FAST;
-  HAL_GPIO_Init(GPIOG, &gpiog_init);
+  gpio_init.Pin = GPIO_PIN_13;
+  gpio_init.Mode = GPIO_MODE_OUTPUT_PP;
+  gpio_init.Pull = GPIO_NOPULL;
+  gpio_init.Speed = GPIO_SPEED_FAST;
+  HAL_GPIO_Init(GPIOG, &gpio_init);
+
 
   // setup lcd log
   LCD_LOG_Init();
@@ -59,7 +159,12 @@ int main(void)
   sprintf(&header_buffer, "Monkey Bot %s", VERSION_STRING);
   LCD_LOG_SetHeader(&header_buffer);
 
-  uint32_t blink_count = 0;
+  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);
+
+  // state variables
+  int motor_button_state = 0; // 1 = pressed
+  int motor_button_state_last = 0;
+  int motor_direction = 1; // 0 = reverse, 1 = off, 2 = forward
 
   /* Infinite loop */
   while (1)
@@ -67,15 +172,39 @@ int main(void)
     // update status
     LCD_LOG_ClearTextZone();
     LCD_UsrLog("Hello world!\n");
-    LCD_UsrLog("Blink count: %d\n", blink_count);
+    if(motor_direction == 0) {
+      LCD_UsrLog("Motor state: reverse\n");
+    } else if (motor_direction == 1) {
+      LCD_UsrLog("Motor state: off\n");
+    } else {
+      LCD_UsrLog("Motor state: forward\n");
+    }
 
-    // toggle pin 13
-    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);
-    HAL_Delay(1000);
-    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET);
-    HAL_Delay(1000);
+    motor_button_state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
+    if(motor_button_state == 1 && motor_button_state_last == 0) {
+      motor_direction = (motor_direction + 1) % 3; // increment with wrap
+    }
+    motor_button_state_last = motor_button_state;
 
-    blink_count++;
+    // set motor output
+    if(motor_direction == 0) {
+      vnh5019_set(&motor_pivot_l_state, 10000, FORWARD);
+      vnh5019_set(&motor_pivot_r_state, 10000, FORWARD);
+      vnh5019_set(&motor_3_state, 10000, FORWARD);
+      vnh5019_set(&motor_4_state, 10000, FORWARD);
+    } else if (motor_direction == 1) {
+      vnh5019_set(&motor_pivot_l_state, 0, FORWARD);
+      vnh5019_set(&motor_pivot_r_state, 0, FORWARD);
+      vnh5019_set(&motor_3_state, 0, FORWARD);
+      vnh5019_set(&motor_4_state, 0, FORWARD);
+    } else {
+      vnh5019_set(&motor_pivot_l_state, 10000, REVERSE);
+      vnh5019_set(&motor_pivot_r_state, 10000, REVERSE);
+      vnh5019_set(&motor_3_state, 10000, REVERSE);
+      vnh5019_set(&motor_4_state, 10000, REVERSE);
+    }
+
+    HAL_Delay(50);
   }
 }
 
@@ -154,7 +283,8 @@ static void SystemClock_Config(void)
   */
 static void Error_Handler(void)
 {
-  /* User may add here some code to deal with this error */
+  // turn the on board LED on to indicate error
+  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET);
   while(1)
   {
   }
