@@ -16,10 +16,13 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef AdcHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 static void Error_Handler(void);
+void adc_init(void);
+uint32_t adc_read(uint32_t channel);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -152,6 +155,20 @@ int main(void)
   gpio_init.Speed = GPIO_SPEED_FAST;
   HAL_GPIO_Init(GPIOG, &gpio_init);
 
+  // set up PC4 as ADC14 in
+  gpio_init.Pin = GPIO_PIN_4;
+  gpio_init.Mode = GPIO_MODE_ANALOG;
+  gpio_init.Pull = GPIO_NOPULL;
+  gpio_init.Speed = GPIO_SPEED_FAST;
+  HAL_GPIO_Init(GPIOC, &gpio_init);
+
+  // set up PC5 as ADC15 in
+  gpio_init.Pin = GPIO_PIN_5;
+  gpio_init.Mode = GPIO_MODE_ANALOG;
+  gpio_init.Pull = GPIO_NOPULL;
+  gpio_init.Speed = GPIO_SPEED_FAST;
+  HAL_GPIO_Init(GPIOC, &gpio_init);
+
 
   // setup lcd log
   LCD_LOG_Init();
@@ -179,6 +196,14 @@ int main(void)
     } else {
       LCD_UsrLog("Motor state: forward\n");
     }
+
+    char adc_readout_buffer[64];
+    uint32_t sample14 = 0;
+    sample14 = adc_read(ADC_CHANNEL_14);
+    sprintf(&adc_readout_buffer, "ADC14: 0x%x\n", sample14);
+    LCD_UsrLog(&adc_readout_buffer);
+    sprintf(&adc_readout_buffer, "ADC15: 0x%x\n", adc_read(ADC_CHANNEL_15));
+    LCD_UsrLog(&adc_readout_buffer);
 
     motor_button_state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
     if(motor_button_state == 1 && motor_button_state_last == 0) {
@@ -276,6 +301,7 @@ static void SystemClock_Config(void)
   }
 }
 
+
 /**
   * @brief  This function is executed in case of error occurrence.
   * @param  None
@@ -289,6 +315,76 @@ static void Error_Handler(void)
   {
   }
 }
+
+
+void adc_init(void) {
+  __ADC2_CLK_ENABLE();
+  /*##-1- Configure the ADC peripheral #######################################*/
+  AdcHandle.Instance          = ADC2;
+  
+  AdcHandle.Init.ClockPrescaler        = ADC_CLOCKPRESCALER_PCLK_DIV2;
+  AdcHandle.Init.Resolution            = ADC_RESOLUTION12b;
+  AdcHandle.Init.ScanConvMode          = DISABLE;
+  AdcHandle.Init.ContinuousConvMode    = DISABLE;
+  AdcHandle.Init.DiscontinuousConvMode = DISABLE;
+  AdcHandle.Init.NbrOfDiscConversion   = 0;
+  AdcHandle.Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  AdcHandle.Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T1_CC1;
+  AdcHandle.Init.DataAlign             = ADC_DATAALIGN_LEFT; // return 16 bit values
+  AdcHandle.Init.NbrOfConversion       = 1;
+  AdcHandle.Init.DMAContinuousRequests = DISABLE;
+  AdcHandle.Init.EOCSelection          = DISABLE;
+      
+  if(HAL_ADC_Init(&AdcHandle) != HAL_OK)
+  {
+    /* Initialization Error */
+    Error_Handler();
+  }
+}
+
+
+/* Blocking ADC read. Must have configured GPIO as analog already. */
+uint32_t adc_read(uint32_t channel) {
+  /*##-2- Configure ADC regular channel ######################################*/
+  ADC_ChannelConfTypeDef sConfig;  
+  sConfig.Channel      = channel;
+  sConfig.Rank         = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
+  sConfig.Offset       = 0;
+  
+  if(HAL_ADC_ConfigChannel(&AdcHandle, &sConfig) != HAL_OK)
+  {
+    /* Channel Configuration Error */
+    Error_Handler();
+  }
+  
+
+  /*##-3- Start the conversion process #######################################*/  
+  if(HAL_ADC_Start(&AdcHandle) != HAL_OK)
+  {
+    /* Start Conversation Error */
+    Error_Handler();
+  }
+  
+  /*##-4- Wait for the end of conversion #####################################*/  
+   /*  Before starting a new conversion, you need to check the current state of 
+        the peripheral; if it’s busy you need to wait for the end of current
+        conversion before starting a new one.
+        For simplicity reasons, this example is just waiting till the end of the 
+        conversion, but application may perform other tasks while conversion 
+        operation is ongoing. */
+  HAL_ADC_PollForConversion(&AdcHandle, 10000);
+  
+  /* Check if the continous conversion of regular channel is finished */
+  if(HAL_ADC_GetState(&AdcHandle) == HAL_ADC_STATE_EOC_REG)
+  {
+    /*##-5- Get the converted value of regular channel  ######################*/
+    return HAL_ADC_GetValue(&AdcHandle);
+  } else {
+    Error_Handler();
+  }
+}
+
 
 #ifdef  USE_FULL_ASSERT
 /**
