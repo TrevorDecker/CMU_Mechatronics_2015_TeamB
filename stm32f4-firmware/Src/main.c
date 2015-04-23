@@ -183,14 +183,14 @@ int main(void)
   
   AdcHandle.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV4;
   AdcHandle.Init.Resolution = ADC_RESOLUTION12b;
-  AdcHandle.Init.ScanConvMode = DISABLE;
+  AdcHandle.Init.ScanConvMode = ENABLE;
   AdcHandle.Init.ContinuousConvMode = ENABLE;
   AdcHandle.Init.DiscontinuousConvMode = DISABLE;
   AdcHandle.Init.NbrOfDiscConversion = 0;
   AdcHandle.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   AdcHandle.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T1_CC1;
   AdcHandle.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  AdcHandle.Init.NbrOfConversion = 1;
+  AdcHandle.Init.NbrOfConversion = 2;
   AdcHandle.Init.DMAContinuousRequests = ENABLE;
   AdcHandle.Init.EOCSelection = DISABLE;
       
@@ -226,7 +226,7 @@ int main(void)
   }
 
   /*##-3- Start the conversion process and enable interrupt ##################*/  
-  if(HAL_ADC_Start_DMA(&AdcHandle, (uint32_t *)&ADCBuffer, 1) != HAL_OK)
+  if(HAL_ADC_Start_DMA(&AdcHandle, (uint32_t *)&ADCBuffer, 2) != HAL_OK)
   {
     /* Start Conversation Error */
     Error_Handler(); 
