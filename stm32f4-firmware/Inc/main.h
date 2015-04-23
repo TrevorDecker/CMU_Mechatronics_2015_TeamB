@@ -25,12 +25,13 @@ extern ADC_HandleTypeDef AdcHandle;
 #define DMAx_CLK_ENABLE()               __DMA2_CLK_ENABLE()
 
 /* Definition for ADCx's DMA */
-#define ADCx_DMA_CHANNEL                DMA_CHANNEL_2
-#define ADCx_DMA_STREAM                 DMA2_Stream0         
+/* See reference manual table 42/43 for DMA event mapping. */
+#define ADCx_DMA_CHANNEL                DMA_CHANNEL_1
+#define ADCx_DMA_STREAM                 DMA2_Stream2
 
 /* Definition for ADCx's NVIC */
-#define ADCx_DMA_IRQn                   DMA2_Stream0_IRQn
-#define ADCx_DMA_IRQHandler             DMA2_Stream0_IRQHandler
+#define ADCx_DMA_IRQn                   DMA2_Stream2_IRQn
+#define ADCx_DMA_IRQHandler             DMA2_Stream2_IRQHandler
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */

@@ -42,7 +42,7 @@ int main(void)
        - Low Level Initialization
      */
   HAL_Init();
-  HAL_Delay(2000);
+  // HAL_Delay(2000);
 
   /* Configure the System clock to 180 MHz */
   SystemClock_Config();
@@ -463,7 +463,7 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef *hadc)
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* AdcHandle)
 {
   /* Turn LED1 on: Transfer process is correct */
-  HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET);
+  // HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET);
 }
 
 
