@@ -17,6 +17,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef AdcHandle;
+volatile int adc_conv_count = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
@@ -42,7 +43,7 @@ int main(void)
        - Low Level Initialization
      */
   HAL_Init();
-  // HAL_Delay(2000);
+  HAL_Delay(2000);
 
   /* Configure the System clock to 180 MHz */
   SystemClock_Config();
@@ -180,7 +181,7 @@ int main(void)
   /*##-1- Configure the ADC peripheral #######################################*/
   AdcHandle.Instance = ADCx;
   
-  AdcHandle.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV2;
+  AdcHandle.Init.ClockPrescaler = ADC_CLOCKPRESCALER_PCLK_DIV4;
   AdcHandle.Init.Resolution = ADC_RESOLUTION12b;
   AdcHandle.Init.ScanConvMode = DISABLE;
   AdcHandle.Init.ContinuousConvMode = ENABLE;
@@ -204,7 +205,7 @@ int main(void)
 
   sConfig.Channel = ADC_CHANNEL_14;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
   sConfig.Offset = 0;
   
   if(HAL_ADC_ConfigChannel(&AdcHandle, &sConfig) != HAL_OK)
@@ -213,16 +214,16 @@ int main(void)
     Error_Handler(); 
   }
 
-  // sConfig.Channel = ADC_CHANNEL_15;
-  // sConfig.Rank = 2;
-  // sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-  // sConfig.Offset = 0;
+  sConfig.Channel = ADC_CHANNEL_15;
+  sConfig.Rank = 2;
+  sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
+  sConfig.Offset = 0;
   
-  // if(HAL_ADC_ConfigChannel(&AdcHandle, &sConfig) != HAL_OK)
-  // {
-  //   /* Channel Configuration Error */
-  //   Error_Handler(); 
-  // }
+  if(HAL_ADC_ConfigChannel(&AdcHandle, &sConfig) != HAL_OK)
+  {
+    /* Channel Configuration Error */
+    Error_Handler(); 
+  }
 
   /*##-3- Start the conversion process and enable interrupt ##################*/  
   if(HAL_ADC_Start_DMA(&AdcHandle, (uint32_t *)&ADCBuffer, 1) != HAL_OK)
@@ -267,6 +268,8 @@ int main(void)
     LCD_UsrLog(&adc_readout_buffer);
     sprintf(&adc_readout_buffer, "ADC15: 0x%x\n", ADCBuffer[1]);
     LCD_UsrLog(&adc_readout_buffer);
+    sprintf(&adc_readout_buffer, "adc_conv_count: %d\n", adc_conv_count);
+    LCD_UsrLog(&adc_readout_buffer);
 
 
     motor_button_state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
@@ -293,7 +296,7 @@ int main(void)
       vnh5019_set(&motor_4_state, 10000, REVERSE);
     }
 
-    HAL_Delay(50);
+    HAL_Delay(200);
   }
 }
 
@@ -419,8 +422,8 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
 
   /*##-4- Configure the NVIC for DMA #########################################*/
   /* NVIC configuration for DMA transfer complete interrupt */
-  HAL_NVIC_SetPriority(ADCx_DMA_IRQn, 0, 0);   
-  HAL_NVIC_EnableIRQ(ADCx_DMA_IRQn);
+  // HAL_NVIC_SetPriority(ADCx_DMA_IRQn, 0, 0);   
+  // HAL_NVIC_EnableIRQ(ADCx_DMA_IRQn);
 }
 
 
@@ -449,7 +452,7 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef *hadc)
   HAL_DMA_DeInit(&hdma_adc); 
     
   /*##-4- Disable the NVIC for DMA ###########################################*/
-  HAL_NVIC_DisableIRQ(ADCx_DMA_IRQn);
+  // HAL_NVIC_DisableIRQ(ADCx_DMA_IRQn);
 }
 
 
@@ -464,6 +467,8 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* AdcHandle)
 {
   /* Turn LED1 on: Transfer process is correct */
   // HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET);
+  // HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);
+  adc_conv_count++;
 }
 
 
