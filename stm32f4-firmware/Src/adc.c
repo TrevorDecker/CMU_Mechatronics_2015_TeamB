@@ -15,22 +15,6 @@ int adc_init(adc_state_t *state,
     state->channel_buffer[i] = 0xAAAA;
   }
 
-  GPIO_InitTypeDef gpio_init;
-
-  // set up PC4 as ADC14 in
-  gpio_init.Pin = GPIO_PIN_4;
-  gpio_init.Mode = GPIO_MODE_ANALOG;
-  gpio_init.Pull = GPIO_NOPULL;
-  gpio_init.Speed = GPIO_SPEED_FAST;
-  HAL_GPIO_Init(GPIOC, &gpio_init);
-
-  // set up PC5 as ADC15 in
-  gpio_init.Pin = GPIO_PIN_5;
-  gpio_init.Mode = GPIO_MODE_ANALOG;
-  gpio_init.Pull = GPIO_NOPULL;
-  gpio_init.Speed = GPIO_SPEED_FAST;
-  HAL_GPIO_Init(GPIOC, &gpio_init);
-
   /*##-1- Configure the ADC peripheral #######################################*/
   AdcHandle.Instance = ADCx;
   
@@ -88,29 +72,33 @@ int adc_init(adc_state_t *state,
     return -1;
   }
   
-  /*##-2- Configure ADC regular channel ######################################*/  
+  /*##-2- Configure ADC Channels #############################################*/
+  GPIO_InitTypeDef gpio_init;
   ADC_ChannelConfTypeDef sConfig;
+  state->active_channel_count = active_channel_count;
 
-  sConfig.Channel = ADC_CHANNEL_14;
-  sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
-  sConfig.Offset = 0;
-  
-  if(HAL_ADC_ConfigChannel(&AdcHandle, &sConfig) != HAL_OK)
-  {
-    /* Channel Configuration Error */
-    return -1;
-  }
+  // use the hw assign array to set up pins and channels
+  for(int i = 0; i < state->active_channel_count; i++) {
+    // copy into state
+    state->hw_assign[i] = hw_assign[i];
 
-  sConfig.Channel = ADC_CHANNEL_15;
-  sConfig.Rank = 2;
-  sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
-  sConfig.Offset = 0;
-  
-  if(HAL_ADC_ConfigChannel(&AdcHandle, &sConfig) != HAL_OK)
-  {
-    /* Channel Configuration Error */
-    return -1;
+    // GPIO setup
+    gpio_init.Pin = state->hw_assign[i].pin;
+    gpio_init.Mode = GPIO_MODE_ANALOG;
+    gpio_init.Pull = GPIO_NOPULL;
+    gpio_init.Speed = GPIO_SPEED_FAST;
+    HAL_GPIO_Init(state->hw_assign[i].gpio, &gpio_init);
+
+    // ADC channel setup
+    sConfig.Channel = state->hw_assign[i].adc_channel;
+    sConfig.Rank = i+1; // rank starts at 1
+    sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
+    sConfig.Offset = 0;
+    if(HAL_ADC_ConfigChannel(&AdcHandle, &sConfig) != HAL_OK)
+    {
+      /* Channel Configuration Error */
+      return -1;
+    }
   }
 
   /*##-3- Start the conversion process and enable interrupt ##################*/  

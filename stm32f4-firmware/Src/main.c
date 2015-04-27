@@ -162,6 +162,13 @@ int main(void)
   adc_hw_assign_channel_t adc_hw_assign[2];
   adc_state_t adc_state;
 
+  adc_hw_assign[0].gpio = GPIOC;
+  adc_hw_assign[0].pin = GPIO_PIN_4;
+  adc_hw_assign[0].adc_channel = ADC_CHANNEL_14;
+  adc_hw_assign[1].gpio = GPIOC;
+  adc_hw_assign[1].pin = GPIO_PIN_5;
+  adc_hw_assign[1].adc_channel = ADC_CHANNEL_15;
+
   if(adc_init(&adc_state, (adc_hw_assign_channel_t *)&adc_hw_assign, 2) != 0) {
     Error_Handler();
   }
