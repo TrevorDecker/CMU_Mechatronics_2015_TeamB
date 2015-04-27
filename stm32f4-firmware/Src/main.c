@@ -175,6 +175,85 @@ int main(void)
 
   //////////////////////////////////////////////////////////////////////////////
 
+  uint8_t spi_tx_buffer[4];
+  uint8_t spi_rx_buffer[4];
+  SPI_HandleTypeDef SpiHandle;
+
+  // set up SCK/MISO/MOSI gpio
+  // NSS?
+  // SCK
+  gpio_init.Pin = GPIO_PIN_13;
+  gpio_init.Mode = GPIO_MODE_AF_PP;
+  gpio_init.Pull = GPIO_NOPULL;
+  gpio_init.Speed = GPIO_SPEED_FAST;
+  gpio_init.Alternate = GPIO_AF5_SPI2;
+  HAL_GPIO_Init(GPIOB, &gpio_init);
+  // MISO
+  gpio_init.Pin = GPIO_PIN_14;
+  gpio_init.Mode = GPIO_MODE_AF_PP;
+  gpio_init.Pull = GPIO_NOPULL;
+  gpio_init.Speed = GPIO_SPEED_FAST;
+  gpio_init.Alternate = GPIO_AF5_SPI2;
+  HAL_GPIO_Init(GPIOB, &gpio_init);
+  // MOSI
+  gpio_init.Pin = GPIO_PIN_15;
+  gpio_init.Mode = GPIO_MODE_AF_PP;
+  gpio_init.Pull = GPIO_NOPULL;
+  gpio_init.Speed = GPIO_SPEED_FAST;
+  gpio_init.Alternate = GPIO_AF5_SPI2;
+  HAL_GPIO_Init(GPIOB, &gpio_init);
+
+  /*##-1- Configure the SPI peripheral #######################################*/
+  /* Enable SPI clock */
+  __SPI2_CLK_ENABLE();
+  /* Set the SPI parameters */
+  SpiHandle.Instance               = SPI2;
+  SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+  SpiHandle.Init.Direction         = SPI_DIRECTION_2LINES;
+  SpiHandle.Init.CLKPhase          = SPI_PHASE_1EDGE;
+  SpiHandle.Init.CLKPolarity       = SPI_POLARITY_HIGH;
+  SpiHandle.Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLED;
+  SpiHandle.Init.CRCPolynomial     = 7;
+  SpiHandle.Init.DataSize          = SPI_DATASIZE_8BIT;
+  SpiHandle.Init.FirstBit          = SPI_FIRSTBIT_MSB;
+  SpiHandle.Init.NSS               = SPI_NSS_SOFT;
+  SpiHandle.Init.TIMode            = SPI_TIMODE_DISABLED;
+  SpiHandle.Init.Mode              = SPI_MODE_MASTER;
+
+  if(HAL_SPI_Init(&SpiHandle) != HAL_OK)
+  {
+    /* Initialization Error */
+    Error_Handler();
+  }
+  
+  /*##-2- Start the Full Duplex Communication process ########################*/  
+  /* While the SPI in TransmitReceive process, user can transmit data through 
+     "aTxBuffer" buffer & receive data through "aRxBuffer" */
+  /* Timeout is set to 5s */
+  
+  switch(HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t*)spi_tx_buffer, (uint8_t *)spi_rx_buffer, 4, 5000)) {
+    case HAL_OK:  
+      /* Communication is completed_____________________________________________*/
+      
+      break;  
+      
+    case HAL_TIMEOUT:
+      /* A Timeout occurred_____________________________________________________*/
+      /* Call Timeout Handler */
+      break;  
+      
+      /* An Error occurred______________________________________________________*/
+    case HAL_ERROR:
+      /* Call Timeout Handler */
+      Error_Handler();  
+      break;
+    
+    default:
+      break;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+
 
   // setup lcd log
   LCD_LOG_Init();
