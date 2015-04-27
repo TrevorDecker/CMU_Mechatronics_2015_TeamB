@@ -8,6 +8,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
 #include "vnh5019.h"
 
 #define VERSION_STRING "0.1"
@@ -16,10 +17,13 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef AdcHandle;
+volatile int adc_conv_count = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
 static void Error_Handler(void);
+void HAL_ADC_MspInit2(ADC_HandleTypeDef* hadc);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -41,6 +45,7 @@ int main(void)
        - Low Level Initialization
      */
   HAL_Init();
+  HAL_Delay(2000);
 
   /* Configure the System clock to 180 MHz */
   SystemClock_Config();
@@ -152,12 +157,30 @@ int main(void)
   gpio_init.Speed = GPIO_SPEED_FAST;
   HAL_GPIO_Init(GPIOG, &gpio_init);
 
+  //////////////////////////////////////////////////////////////////////////////
+
+  adc_hw_assign_channel_t adc_hw_assign[2];
+  adc_state_t adc_state;
+
+  adc_hw_assign[0].gpio = GPIOC;
+  adc_hw_assign[0].pin = GPIO_PIN_4;
+  adc_hw_assign[0].adc_channel = ADC_CHANNEL_14;
+  adc_hw_assign[1].gpio = GPIOC;
+  adc_hw_assign[1].pin = GPIO_PIN_5;
+  adc_hw_assign[1].adc_channel = ADC_CHANNEL_15;
+
+  if(adc_init(&adc_state, (adc_hw_assign_channel_t *)&adc_hw_assign, 2) != 0) {
+    Error_Handler();
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+
 
   // setup lcd log
   LCD_LOG_Init();
   char header_buffer[64];
-  sprintf(&header_buffer, "Monkey Bot %s", VERSION_STRING);
-  LCD_LOG_SetHeader(&header_buffer);
+  sprintf((char *)&header_buffer, "Monkey Bot %s", VERSION_STRING);
+  LCD_LOG_SetHeader((char *)&header_buffer);
 
   HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);
 
@@ -179,6 +202,16 @@ int main(void)
     } else {
       LCD_UsrLog("Motor state: forward\n");
     }
+
+
+    char adc_readout_buffer[64];
+    sprintf((char *)&adc_readout_buffer, "ADC14: 0x%x\n", adc_get_channel(&adc_state, 0));
+    LCD_UsrLog((char *)&adc_readout_buffer);
+    sprintf((char *)&adc_readout_buffer, "ADC15: 0x%x\n", adc_get_channel(&adc_state, 1));
+    LCD_UsrLog((char *)&adc_readout_buffer);
+    sprintf((char *)&adc_readout_buffer, "adc_conv_count: %d\n", adc_conv_count);
+    LCD_UsrLog((char *)&adc_readout_buffer);
+
 
     motor_button_state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
     if(motor_button_state == 1 && motor_button_state_last == 0) {
@@ -204,9 +237,10 @@ int main(void)
       vnh5019_set(&motor_4_state, 10000, REVERSE);
     }
 
-    HAL_Delay(50);
+    HAL_Delay(200);
   }
 }
+
 
 /**
   * @brief  System Clock Configuration
@@ -276,6 +310,7 @@ static void SystemClock_Config(void)
   }
 }
 
+
 /**
   * @brief  This function is executed in case of error occurrence.
   * @param  None
@@ -289,6 +324,7 @@ static void Error_Handler(void)
   {
   }
 }
+
 
 #ifdef  USE_FULL_ASSERT
 /**
