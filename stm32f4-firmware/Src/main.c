@@ -159,7 +159,10 @@ int main(void)
 
   //////////////////////////////////////////////////////////////////////////////
 
-  if(adc_init() != 0) {
+  adc_hw_assign_channel_t adc_hw_assign[2];
+  adc_state_t adc_state;
+
+  if(adc_init(&adc_state, (adc_hw_assign_channel_t *)&adc_hw_assign, 2) != 0) {
     Error_Handler();
   }
 
@@ -195,9 +198,9 @@ int main(void)
 
 
     char adc_readout_buffer[64];
-    sprintf(&adc_readout_buffer, "ADC14: 0x%x\n", adc_get_channel(0));
+    sprintf(&adc_readout_buffer, "ADC14: 0x%x\n", adc_get_channel(&adc_state, 0));
     LCD_UsrLog(&adc_readout_buffer);
-    sprintf(&adc_readout_buffer, "ADC15: 0x%x\n", adc_get_channel(1));
+    sprintf(&adc_readout_buffer, "ADC15: 0x%x\n", adc_get_channel(&adc_state, 1));
     LCD_UsrLog(&adc_readout_buffer);
     sprintf(&adc_readout_buffer, "adc_conv_count: %d\n", adc_conv_count);
     LCD_UsrLog(&adc_readout_buffer);

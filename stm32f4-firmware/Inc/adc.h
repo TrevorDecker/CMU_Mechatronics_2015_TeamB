@@ -26,13 +26,25 @@ extern ADC_HandleTypeDef AdcHandle;
 
 
 // Structure definitions
-volatile uint32_t ADCBuffer[ADC_MAX_CHANNELS];
+typedef struct adc_hw_assign_channel {
+  GPIO_TypeDef      *gpio;
+  uint32_t           pin;
+  uint32_t           adc_channel;
+} adc_hw_assign_channel_t;
+
+typedef struct adc_state {
+  volatile uint32_t channel_buffer[ADC_MAX_CHANNELS];
+  adc_hw_assign_channel_t hw_assign[ADC_MAX_CHANNELS];
+  uint32_t active_channel_count;
+} adc_state_t;
 
 
 // Methods
-int adc_init(void);
-int adc_deinit(void);
-uint16_t adc_get_channel(uint32_t scanned_index);
+int adc_init(adc_state_t *state,
+             adc_hw_assign_channel_t *hw_assign,
+             uint32_t active_channel_count);
+int adc_deinit(adc_state_t *state);
+uint16_t adc_get_channel(adc_state_t *state, uint32_t scanned_index);
 
 
 #ifdef __cplusplus

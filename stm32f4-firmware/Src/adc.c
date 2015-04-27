@@ -7,10 +7,12 @@
 #include "adc.h"
 
 
-int adc_init() {
+int adc_init(adc_state_t *state,
+             adc_hw_assign_channel_t *hw_assign,
+             uint32_t active_channel_count) {
   // clear memory
   for(int i = 0; i < ADC_MAX_CHANNELS; i++) {
-    ADCBuffer[i] = 0xAAAA;
+    state->channel_buffer[i] = 0xAAAA;
   }
 
   GPIO_InitTypeDef gpio_init;
@@ -59,7 +61,7 @@ int adc_init() {
   
   /*##-3- Configure the DMA streams ##########################################*/
   /* Set the parameters to be configured */
-  static DMA_HandleTypeDef  hdma_adc;
+  DMA_HandleTypeDef  hdma_adc;
   hdma_adc.Instance = ADCx_DMA_STREAM;
   
   hdma_adc.Init.Channel  = ADCx_DMA_CHANNEL;
@@ -112,7 +114,7 @@ int adc_init() {
   }
 
   /*##-3- Start the conversion process and enable interrupt ##################*/  
-  if(HAL_ADC_Start_DMA(&AdcHandle, (uint32_t *)&ADCBuffer, 2) != HAL_OK)
+  if(HAL_ADC_Start_DMA(&AdcHandle, (uint32_t *)&(state->channel_buffer), 2) != HAL_OK)
   {
     /* Start Conversation Error */
     return -1;
@@ -122,13 +124,13 @@ int adc_init() {
 }
 
 
-int adc_deinit() {
+int adc_deinit(adc_state_t *state) {
   return 0;
 }
 
 
-uint16_t adc_get_channel(uint32_t scanned_index) {
-  return ADCBuffer[scanned_index];
+uint16_t adc_get_channel(adc_state_t *state, uint32_t scanned_index) {
+  return state->channel_buffer[scanned_index];
 }
 
 
