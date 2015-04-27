@@ -180,7 +180,13 @@ int main(void)
   SPI_HandleTypeDef SpiHandle;
 
   // set up SCK/MISO/MOSI gpio
-  // NSS?
+  // NSS
+  gpio_init.Pin = GPIO_PIN_12;
+  gpio_init.Mode = GPIO_MODE_AF_PP;
+  gpio_init.Pull = GPIO_NOPULL;
+  gpio_init.Speed = GPIO_SPEED_FAST;
+  gpio_init.Alternate = GPIO_AF5_SPI2;
+  HAL_GPIO_Init(GPIOB, &gpio_init);
   // SCK
   gpio_init.Pin = GPIO_PIN_13;
   gpio_init.Mode = GPIO_MODE_AF_PP;
@@ -210,13 +216,13 @@ int main(void)
   SpiHandle.Instance               = SPI2;
   SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   SpiHandle.Init.Direction         = SPI_DIRECTION_2LINES;
-  SpiHandle.Init.CLKPhase          = SPI_PHASE_1EDGE;
-  SpiHandle.Init.CLKPolarity       = SPI_POLARITY_HIGH;
+  SpiHandle.Init.CLKPhase          = SPI_PHASE_2EDGE; // CPHA = 1
+  SpiHandle.Init.CLKPolarity       = SPI_POLARITY_HIGH; // CPOL = 1
   SpiHandle.Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLED;
   SpiHandle.Init.CRCPolynomial     = 7;
   SpiHandle.Init.DataSize          = SPI_DATASIZE_8BIT;
   SpiHandle.Init.FirstBit          = SPI_FIRSTBIT_MSB;
-  SpiHandle.Init.NSS               = SPI_NSS_SOFT;
+  SpiHandle.Init.NSS               = SPI_NSS_HARD_OUTPUT;
   SpiHandle.Init.TIMode            = SPI_TIMODE_DISABLED;
   SpiHandle.Init.Mode              = SPI_MODE_MASTER;
 
@@ -231,26 +237,26 @@ int main(void)
      "aTxBuffer" buffer & receive data through "aRxBuffer" */
   /* Timeout is set to 5s */
   
-  switch(HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t*)spi_tx_buffer, (uint8_t *)spi_rx_buffer, 4, 5000)) {
-    case HAL_OK:  
-      /* Communication is completed_____________________________________________*/
+  // switch(HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t*)spi_tx_buffer, (uint8_t *)spi_rx_buffer, 4, 5000)) {
+  //   case HAL_OK:  
+  //     /* Communication is completed_____________________________________________*/
       
-      break;  
+  //     break;  
       
-    case HAL_TIMEOUT:
-      /* A Timeout occurred_____________________________________________________*/
-      /* Call Timeout Handler */
-      break;  
+  //   case HAL_TIMEOUT:
+  //      A Timeout occurred_____________________________________________________
+  //     /* Call Timeout Handler */
+  //     break;  
       
-      /* An Error occurred______________________________________________________*/
-    case HAL_ERROR:
-      /* Call Timeout Handler */
-      Error_Handler();  
-      break;
+  //     /* An Error occurred______________________________________________________*/
+  //   case HAL_ERROR:
+  //     /* Call Timeout Handler */
+  //     Error_Handler();  
+  //     break;
     
-    default:
-      break;
-  }
+  //   default:
+  //     break;
+  // }
 
   //////////////////////////////////////////////////////////////////////////////
 
@@ -291,6 +297,17 @@ int main(void)
     sprintf((char *)&adc_readout_buffer, "adc_conv_count: %d\n", adc_conv_count);
     LCD_UsrLog((char *)&adc_readout_buffer);
 
+    char spi_readout_buffer[64];
+    int spi_status = 0;
+    uint32_t spi_result = 0;
+    spi_tx_buffer[0] = 0xAA;
+    spi_tx_buffer[1] = 0xBB;
+    spi_tx_buffer[2] = 0xCC;
+    spi_tx_buffer[3] = 0xDD;
+    spi_status = HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t*)spi_tx_buffer, (uint8_t *)spi_rx_buffer, 1, 1000);
+    spi_result = spi_rx_buffer[0] | (spi_rx_buffer[1] << 8) | (spi_rx_buffer[2] << 16) | (spi_rx_buffer[3]<< 24);
+    sprintf((char *)&spi_readout_buffer, "SPI: status=%d, data=0x%x\n", spi_status, spi_result);
+    LCD_UsrLog((char *)&spi_readout_buffer);
 
     motor_button_state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
     if(motor_button_state == 1 && motor_button_state_last == 0) {
