@@ -36,14 +36,7 @@ int adc_init(adc_state_t *state,
   /* Enable DMA2 clock */
   DMAx_CLK_ENABLE(); 
   
-  /*##-2- Configure peripheral GPIO ##########################################*/ 
-  /* ADC3 Channel8 GPIO pin configuration */
-  // GPIO_InitStruct.Pin = ADCx_CHANNEL_PIN;
-  // GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-  // GPIO_InitStruct.Pull = GPIO_NOPULL;
-  // HAL_GPIO_Init(ADCx_CHANNEL_GPIO_PORT, &GPIO_InitStruct);
-  
-  /*##-3- Configure the DMA streams ##########################################*/
+  /*##-2- Configure the DMA streams ##########################################*/
   /* Set the parameters to be configured */
   DMA_HandleTypeDef  hdma_adc;
   hdma_adc.Instance = ADCx_DMA_STREAM;
@@ -72,7 +65,7 @@ int adc_init(adc_state_t *state,
     return -1;
   }
   
-  /*##-2- Configure ADC Channels #############################################*/
+  /*##-3- Configure ADC Channels #############################################*/
   GPIO_InitTypeDef gpio_init;
   ADC_ChannelConfTypeDef sConfig;
   state->active_channel_count = active_channel_count;
@@ -101,7 +94,7 @@ int adc_init(adc_state_t *state,
     }
   }
 
-  /*##-3- Start the conversion process and enable interrupt ##################*/  
+  /*##-4- Start the conversion process and enable interrupt ##################*/  
   if(HAL_ADC_Start_DMA(&AdcHandle, (uint32_t *)&(state->channel_buffer), 2) != HAL_OK)
   {
     /* Start Conversation Error */
