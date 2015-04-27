@@ -179,8 +179,8 @@ int main(void)
   // setup lcd log
   LCD_LOG_Init();
   char header_buffer[64];
-  sprintf(&header_buffer, "Monkey Bot %s", VERSION_STRING);
-  LCD_LOG_SetHeader(&header_buffer);
+  sprintf((char *)&header_buffer, "Monkey Bot %s", VERSION_STRING);
+  LCD_LOG_SetHeader((char *)&header_buffer);
 
   HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);
 
@@ -205,12 +205,12 @@ int main(void)
 
 
     char adc_readout_buffer[64];
-    sprintf(&adc_readout_buffer, "ADC14: 0x%x\n", adc_get_channel(&adc_state, 0));
-    LCD_UsrLog(&adc_readout_buffer);
-    sprintf(&adc_readout_buffer, "ADC15: 0x%x\n", adc_get_channel(&adc_state, 1));
-    LCD_UsrLog(&adc_readout_buffer);
-    sprintf(&adc_readout_buffer, "adc_conv_count: %d\n", adc_conv_count);
-    LCD_UsrLog(&adc_readout_buffer);
+    sprintf((char *)&adc_readout_buffer, "ADC14: 0x%x\n", adc_get_channel(&adc_state, 0));
+    LCD_UsrLog((char *)&adc_readout_buffer);
+    sprintf((char *)&adc_readout_buffer, "ADC15: 0x%x\n", adc_get_channel(&adc_state, 1));
+    LCD_UsrLog((char *)&adc_readout_buffer);
+    sprintf((char *)&adc_readout_buffer, "adc_conv_count: %d\n", adc_conv_count);
+    LCD_UsrLog((char *)&adc_readout_buffer);
 
 
     motor_button_state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0);
