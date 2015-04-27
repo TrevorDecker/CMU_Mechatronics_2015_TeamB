@@ -152,10 +152,10 @@ static void LED_Thread2(void const *argument)
     BSP_LED_Off(LED4);
     
     // Resume Thread 1 
-    //osThreadResume(LEDThread1Handle);  TODO uncoment 
+    osThreadResume(LEDThread1Handle); 
     
     // Suspend Thread 2 
-    //    osThreadSuspend(NULL);   TODO uncoment 
+    osThreadSuspend(NULL);  
   }
 }
 

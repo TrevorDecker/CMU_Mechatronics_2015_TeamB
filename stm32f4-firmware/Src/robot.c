@@ -7,6 +7,11 @@
    ChangeLog: NONE
 */
 
+//TODO add motor control 
+//TODO add sensors
+//TODO move to freeRTOS
+//TODO clean up code
+//TODO test  
 
 
   // X runs left to right parllel to the floor
@@ -15,236 +20,212 @@
   
 #include "robot.h"
 #include <stdio.h>
+#include <math.h>
 
-//TODO move somewhre else 
-void error(const char* this_error){
+//TODO use math abs instead once it gets linked in 
+double abs(double input){
+  if(input > 0){
+    return input;
+  }else{
+    return -input;
+  }
+}
+
+double min(double a,double b)
+{
+  if(a < b){
+    return a;
+  }else{
+    return b;
+  }
+}
+
+double max(double a,double b){
+  if(a < b){
+    return b;
+  }else{
+    return a;
+  }
+}
+
+
+
+//TODO move somewhere else 
+void error(const char* thisError){
   //TODO report to string 
-  printf("ERROR: %s \n",this_error);
+  printf("ERROR: %s \n",thisError);
 }
 
-
-
-// ****************************************
-// *********   Cleaner Code ***************
-// ****************************************
-
-//move the cleaning unit left until left limit is reached with cleaner on the window
-int cleanLeft(){
-  //TODO
-}
-
-//move the cleaning unit right until right limit is reached with cleaner on window
-int cleanRight(){
-  //TODO
-}
-
-//move the cleaning unit left until left limit is reached with cleaner not on the window
-int moveCleanerLeft(){
-  //TODO
-
-}
-
-//move the cleaning unit right until right limit is reached with cleaner not on the window
-int moveCleanerRight(){
-  //TODO
-}
-
-//moves the cleaning unit onto the window so that it is touching
-int cleanerToWindow(){
-  //TODO
-}
-
-//move the cleaner away from the window so that it is not touching the window
-int cleanerOffWindow(){
-  //TODO
-}
-
-//moves the cleaner away from the window so that the robot can clear the window frame 
-int cleanerClearWindow(){
-  //TODO
-}
-
-//move cleaner left and right a predetermined number of times which should leave the window cleaned 
-int cleanThisLevel(){
-  moveCleanerLeft();
-  for(int pass = 0;pass<3;pass++){
-    cleanRight();
-    cleanLeft();
-  }
-}
-
-
-void  cleanTo(double pointToCLeanTo){
-    //TODO
-}
-
-int cleanTo_blocking(double pointToCleanTo){
-  //TODO
-}
-  
-void  moveCleanerTo(double pointToCleanTo){
-    //TODO
-  }
-
-int moveCleanerTo_blcoking(double pointToCleanTo){
-  //TODO
-}
-
-int   homeCleaner(){
-    //TODO
-  }
-
-// *******************************************
-// ********    Extension Arm Code   **********
-// *******************************************
-
-  //TODO
-int homeExtensionArm()
-{
-    //stopGripping on a side 
-} 
-
-void extendTo(double newExtension){
-  //TODO
-}
-
-//extend/contract the arm by delta meters
-void extendBy(double extensionDelta){
-  //TODO
-}
-
-int extendTo_blocking(double newExtension){
-  //TODO
-}
-
-double getCurrentExtension()
+double gripper_max_height_one_motion(gripper_state_t * thisGripper,gripper_state_t* otherGripper)
 {
   //TODO
+  return 0;
 }
 
-double getDesiredExtension()
-{
-  //TODO 
-}
-
-// *******************************************
-// **********   Gripper Code *****************
-// *******************************************
-int lockRightGripper(){
-  //todo
-}
-
-int lockLeftGripper(){
-  //TODO
-}
-
-//release the right side gripper 
-int unlockRightGripper(){
-  if(leftGripper.state != RELEASED){
-    error("Tried to let go of both sides of the window");
-    return -1;
-  }
-  //TODO 
-  return TRUE;
-}
-
-//releases the left side gripper
-int unlockLeftGripper(){
-  if(rightGripper.state != RELEASED){
-    error("Tried to let go of both sides of the window");
-    return -1;
-  }
-  //TODO 
-  return TRUE;
-}
-
-//rotates the left gripper a desired amount
-int rotateLeftGripper(double amountToRotate)
+double gripper_minHeight_one_motion(gripper_state_t * thisGripper,gripper_state_t* otherGripper)
 {
   //TODO
-  return FALSE;
+  return 0;
 }
-
-//rotates the right gripper a desired amount
-int roateRightGripper(double amountToRoate)
-{
-  //TODO
-  return FALSE;
-}
-
-//rotates the left gripper to a desried posistion
-int roateLeftGripperTo(double angleToRotateTo)
-{
-  //TODO
-  return FALSE;
-}
-
-//roates the right gripper to a desried position
-int rotateRightGripperTo(double angleToRotateTo)
-{
-  //TODO
-  return FALSE;
-}
-
-//gets the gripper angle in world frame
-double getLeftGripperAngleWorld()
-{
-  //TODO
-  return -1;
-}
-
-double getRightGripperAngleWorld()
-{
-  //TODO
-  return -1;
-}
-
-
-// ******************************************
-// *********** Multi subsystem code *********
-// *****************************************
-
 
 //Robot will end with both grippers locked 
-int moveRightGripperToHeight(double newHeight){
-  //TODO check to see if right gripper is within range of robot's current posistion, if it is not return an error 
-  lockLeftGripper();
-  unlockRightGripper();
-
-  while(FALSE)       //TODO fix, should be not at the correct height 
-    {
-      roateRightGripper(0);  //TODO set rotation amount for each step
-      extendBy(0);           //TODO set amount to extend by for each step 
-    }
-  lockRightGripper();
-  return TRUE;
-}
-
-//Robot will end with both grippers lcoked
-int moveLeftGripperToHeight(double newHeight){
-  //TODO check to see if left gripper is within range of the robot's current position, if it is not return an error
-  lockRightGripper();
-  unlockLeftGripper();
-  while(FALSE) //TODO fix, should be not at the correct hegiht
-    {
-      rotateLeftGripper(0); //TODO set rotation amount for each step 
-      extendBy(0);          //TODO set amount to extend by for each step
-    }
-  lockLeftGripper();
-  return TRUE;
-}
-
-
-//TODO
-void moveToHeight()
-{
+int moveRightGripperToHeight(window_state_t *window,double newHeight){
+  //check to see if the newHeight is within the range of the gripper 
+  if(newHeight < 0 || newHeight > window->height){
+    error("tried to move to a height that is not on the window \n");
+    return FALSE;
+  }
   
+  double dy = newHeight - window->robot.rightGripper.y;
+  double dth = atan2(dy,window->width);
+  double newTh = window->robot.leftGripper.curentAngleRobotFrame + dth;
+  double newExtension = dy/sin(dth);
+  if(newExtension > MAX_EXTENSION){
+    error("need to be able to extend to a length longer then the arm's max size \n");
+    return FALSE;
+  }else if(newExtension < MIN_EXTENSION){
+    error("need to be able to extend to a length shorter then the arm's min size \n");
+    return FALSE;
+  }else if(newTh > LEFT_GRIPPER_MAX_ANGLE){
+    error("need to be able to rotate past left gripper max angle \n");
+    return FALSE;
+  }else if(newTh < LEFT_GRIPPER_MIN_ANGLE){
+    error("need to be able to rotate past left gripper min angle \n");
+    return FALSE;
+  }
+  lockGripper(&window->robot.leftGripper);
+  unlockGripper(&window->robot.rightGripper);
+
+  extend_to(&window->robot.extensionSystem,newExtension);
+  rotateGripperTo(&window->robot.leftGripper,newTh);
+  //TODO block until all motion is done 
+  lockGripper(&window->robot.rightGripper);
+  return TRUE;
 }
 
-//TODO
-int moveToHeight_blocking()
+//Robot will end with both grippers locked 
+int moveLeftGripperToHeight(window_state_t *window,double newHeight){
+  //check to see if the newHeight is within the range of the gripper 
+  if(newHeight < 0 || newHeight > window->height){
+    error("tried to move to a height that is not on the window \n");
+    return FALSE;
+  }
+  
+  double dy = newHeight - window->robot.leftGripper.y;
+  double dth = atan2(dy,window->width);
+  double newTh = window->robot.rightGripper.curentAngleRobotFrame + dth;
+  double newExtension = dy/sin(dth);
+  if(newExtension > MAX_EXTENSION){
+    error("need to be able to extend to a length longer then the arm's max size \n");
+    return FALSE;
+  }else if(newExtension < MIN_EXTENSION){
+    error("need to be able to extend to a length shorter then the arm's min size \n");
+    return FALSE;
+  }else if(newTh > RIGHT_GRIPPER_MAX_ANGLE){
+    error("need to be able to rotate past left gripper max angle \n");
+    return FALSE;
+  }else if(newTh < RIGHT_GRIPPER_MIN_ANGLE){
+    error("need to be able to rotate past left gripper min angle \n");
+    return FALSE;
+  }
+  lockGripper(&window->robot.rightGripper);
+  unlockGripper(&window->robot.leftGripper);
+
+  extend_to(&window->robot.extensionSystem,newExtension);
+  rotateGripperTo(&window->robot.rightGripper,newTh);
+  //TODO block until all motion is done 
+  lockGripper(&window->robot.leftGripper);
+  return TRUE;
+}
+
+//TODO add other sensors 
+void moveToHeight(window_state_t * window,double newHeight)
 {
+  if(newHeight < 0 || newHeight > window->height){
+    error("can not move to a height that is not on the window \n");
+  }
 
-  return FALSE;  
+  double dLeft = newHeight - window->robot.leftGripper.y;
+  double dRight = newHeight - window->robot.rightGripper.y;
+ 
+  while(abs(window->robot.leftGripper.y - newHeight) > LEVEL_THREASHOLD || \ 
+	abs(window->robot.rightGripper.y - newHeight) > LEVEL_THREASHOLD){
+    //not at the desried height so lets move to it
+    if(abs(dLeft) > abs(dRight)){
+      //left is farther away so lets move it
+      if(dLeft > 0){
+	//want to move down 
+	moveLeftGripperToHeight(window,min(newHeight,gripper_max_height_one_motion(&window->robot.leftGripper,&window->robot.rightGripper)));
+      }else{
+	//want to move up
+	moveLeftGripperToHeight(window,max(newHeight,gripper_minHeight_one_motion(&window->robot.leftGripper,&window->robot.rightGripper)));
+      }
+    }else{
+      //right is farther away so lets move it
+      if(dRight >0){
+	//want to move down 
+	moveRightGripperToHeight(window,min(newHeight,gripper_max_height_one_motion(&window->robot.rightGripper,&window->robot.leftGripper)));
+      }else{
+	//want to move up 
+	moveRightGripperToHeight(window,max(newHeight,gripper_min_height_one_motion(&window->robot.rightGripper,&window->robot.leftGripper)));
+      }
+    }
+  }//while 
+} //function moveToHeight
+
+//TODO setup all of the motors and sensors 
+robot_state_t init_robot(){
+  robot_state_t thisRobot;
+  rotateGripperTo(&thisRobot.leftGripper,DEFAULT_LEFT_GRIPPER_POSITION);
+  rotateGripperTo(&thisRobot.rightGripper,DEFAULT_RIGHT_GRIPPER_POSITION);
+  homeCleaner(&thisRobot.cleaner);
+  home_extension(&thisRobot.extensionSystem);
+  
+  //TODO waits until all processes are done
+  //while(1){  
+  //   delay(10);
+  //   }
+  return thisRobot;
 }
 
+
+//walks throught the process of attaching the robot to the window 
+//assumes that we are attaching to the top of the window 
+window_state_t attach_to_window(){
+  //TODO get input width and height from the user using a pot or touch screen
+  window_state_t thisWindow;
+  thisWindow.height = DEFAULT_WINDOW_HEIGHT;   //meters
+  thisWindow.width  = DEFAULT_WINDOW_WIDTH;    //meters
+
+  thisWindow.robot = init_robot();
+  extend_to(&thisWindow.robot.extensionSystem,thisWindow.width);
+  //TODO wait for button press
+  lockGripper(&thisWindow.robot.leftGripper);
+  //TODO wait for button press
+  lockGripper(&thisWindow.robot.rightGripper);
+  //TODO wait for button press
+  return thisWindow;
+}
+
+//assumes that robot has already been attached to the window 
+int cleanWindow(window_state_t *window){
+  int atBottom = FALSE;
+  while(!atBottom){
+    cleanThisLevel();
+    if(window->robot.leftGripper.y+ROBOT_HEIGHT + MOVE_DOWN_BETWEEN_CLEANS < window->height){ 
+      moveToHeight(window, window->robot.leftGripper.y + MOVE_DOWN_BETWEEN_CLEANS);
+    }else{
+      //move to the bottom of the window 
+      moveToHeight(window,window->height - ROBOT_HEIGHT);
+    }
+  }
+  cleanThisLevel();
+  return TRUE;
+}
+
+void release_from_window(window_state_t *window){
+  //TODO wait for button press
+  unlockGripper(&window->robot.leftGripper);
+  //TODO wait for button press
+  unlockGripper(&window->robot.rightGripper);
+}

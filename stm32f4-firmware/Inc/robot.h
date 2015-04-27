@@ -2,69 +2,39 @@
 #ifndef __ROBOT_H
 #define __ROBOT_H
 
-//convince defintion of lgoic values 
-#define TRUE 1
-#define FALSE 0
+#include "logicValues.h"
+#include "settings.h" 
+#include "gripper.h"
+#include "cleaner.h"
+#include "extension.h"
 
 
-typedef enum gripperState{
-  GRIPPED,
-  GRIPPING,
-  RELEASED,
-  RELEASING,
-  ERRORS
-} gripperState_t;
+//robots position is defined to be left gripper posistion 
+typedef struct robot{
+  gripper_state_t leftGripper;
+  gripper_state_t rightGripper;
+  cleaner_state_t cleaner;
+  extension_state_t extensionSystem;
+} robot_state_t;
 
-typedef struct gripperSystem{
-  gripperState_t state;
-  double anngleRobotFrame;
+typedef struct window{
+  double height;
+  double width;
+  robot_state_t robot;
+} window_state_t;
 
-  //system variables
-  double maxAngle; //in robot frame
-  double minAngle; //in robot frame
-} gripperSystem_t;
+//methods 
+void error(const char* thisError);
+int moveRightGripperToHeight(window_state_t *window,double newHeight);
+int moveLeftGripperToHeight(window_state_t *window,double newHeight);
+robot_state_t init_robot();
+double gripper_max_height_one_motion(gripper_state_t * thisGripper,gripper_state_t* otherGripper);
+double gripper_minHeight_one_motion(gripper_state_t * thisGripper,gripper_state_t* otherGripper);
 
-typedef struct cleanerSystem{
-  double positionAlongArm; //distince along arm of robot
-  double positionApproach; //distince cleaner is towards window
-  double towelPosition; 
+//high level methods 
+window_state_t attach_to_window();
+int cleanWindow(window_state_t* window);
+void release_from_window(window_state_t *window);
 
-  //what you want the cleaner state to be
-  double desiredPositionAlongArm;
-  double desiredPositionApproach;
-  double desiredTowelPosition;
-  
-  //final variables which depend on the window that we are cleanning and towel length that is loaded
-  double towelTotalLength;
-  double minPositionAlongArm;
-  double maxPositionAlongArm;
-  double minPositionApproach;
-  double maxPositionApproach;
-
-  //position of cleaner in arm frame
-  double positionX; //distince along arm of robot in robot frame
-  double positionZ; //distince towards the window in robot frame
-  
-  //position of cleaner in window frame
-  double positionX_w;
-  double positionY_w;
-  double positionZ_w;
-
-} cleanerSystem_t;
-
-typedef struct extensionSystem{
-  double desiredExtensionAmount;
-  double currentExtensionAmount;
-  //minum possible extension for the robot in meters
-  double minextension; 
-  //maximum possible extension for the robot in meters
-  double maxextension;
-} extensionSystem_t;
-
-
-gripperSystem_t leftGripper;
-gripperSystem_t rightGripper;
-cleanerSystem_t theCleaner;
-extensionSystem_t theExtensionSystem;
 
 #endif /*__ROBOT_H */
