@@ -211,7 +211,7 @@ window_state_t attach_to_window(){
 int cleanWindow(window_state_t *window){
   int atBottom = FALSE;
   while(!atBottom){
-    cleanThisLevel();
+    cleanThisLevel(&window->robot.cleaner);
     if(window->robot.leftGripper.y+ROBOT_HEIGHT + MOVE_DOWN_BETWEEN_CLEANS < window->height){ 
       moveToHeight(window, window->robot.leftGripper.y + MOVE_DOWN_BETWEEN_CLEANS);
     }else{
@@ -219,7 +219,7 @@ int cleanWindow(window_state_t *window){
       moveToHeight(window,window->height - ROBOT_HEIGHT);
     }
   }
-  cleanThisLevel();
+  cleanThisLevel(&window->robot.cleaner);
   return TRUE;
 }
 

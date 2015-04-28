@@ -1,44 +1,33 @@
 //cleaner.h
 
+#ifndef _CLEANER_H__
+#define _CLEANER_H__
 //structure defintions 
+#include "vnh5019.h"
+#include "settings.h"
+#include "logicValues.h"
 typedef struct cleanerSystem{
+  //position of cleaner in arm frame
   double positionAlongArm; //distince along arm of robot
   double positionApproach; //distince cleaner is towards window
   double towelPosition; 
-
+  vnh5019_state_t cleanerMotor;
+  
   //what you want the cleaner state to be
   double desiredPositionAlongArm;
   double desiredPositionApproach;
   double desiredTowelPosition;
-  
-  //final variables which depend on the window that we are cleanning and towel length that is loaded
-  double towelTotalLength;
-  double minPositionAlongArm;
-  double maxPositionAlongArm;
-  double minPositionApproach;
-  double maxPositionApproach;
-
-  //position of cleaner in arm frame
-  double positionX; //distince along arm of robot in robot frame
-  double positionZ; //distince towards the window in robot frame
-  
-  //position of cleaner in window frame
-  double positionX_w;
-  double positionY_w;
-  double positionZ_w;
-
 } cleaner_state_t;
 
 
 //methods 
-int cleanLeft();
-int cleanRight();
-int moveCleanerLeft();
-int mvoeCleanerRight();
-int cleanerToWindow();
-int cleanerOffWindow();
-int clenaerClearWindow();
-int cleanThisLevel();
-void cleanTo(double pointToCleanTo);
-void moveCleanerTo(double pointToClenaTo);
-int  homeCleaner();
+int cleanLeft(cleaner_state_t* state);
+int cleanRight(cleaner_state_t* state);
+int cleanerToWindow(cleaner_state_t*state);
+int cleanerOffWindow(cleaner_state_t*state);
+int clenaerClearWindow(cleaner_state_t*state);
+int cleanThisLevel(cleaner_state_t*state);
+void cleanTo(cleaner_state_t* state, double pointToCleanTo);
+void moveCleanerTo(cleaner_state_t* state,double pointToClenaTo);
+int  homeCleaner(cleaner_state_t* state);
+#endif //_CLEANER_H__

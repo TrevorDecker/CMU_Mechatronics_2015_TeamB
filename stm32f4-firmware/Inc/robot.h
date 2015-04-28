@@ -7,7 +7,7 @@
 #include "gripper.h"
 #include "cleaner.h"
 #include "extension.h"
-
+#include "vnh5019.h"
 
 //robots position is defined to be left gripper posistion 
 typedef struct robot{

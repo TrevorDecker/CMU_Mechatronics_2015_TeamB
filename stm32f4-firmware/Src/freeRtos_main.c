@@ -49,7 +49,7 @@ static void SystemClock_Config(void);
 //  @param  None
 //  @retval None
 
-int main(void)
+int main_(void)
 {
 
   // STM32F4xx HAL library initialization:
