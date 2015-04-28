@@ -52,9 +52,9 @@ int main(void)
 
   // init all the timer and gpio clocks we're using
   __TIM3_CLK_ENABLE();
-  __TIM9_CLK_ENABLE();
+  // __TIM9_CLK_ENABLE();
   __TIM10_CLK_ENABLE();
-  // __TIM11_CLK_ENABLE();
+  __TIM12_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -74,44 +74,44 @@ int main(void)
   vnh5019_state_t motor_4_state;
 
   // setup left pivot motor controller
-  motor_hw_assign.ina_gpio = GPIOF;
-  motor_hw_assign.ina_pin = GPIO_PIN_8;
-  motor_hw_assign.inb_gpio = GPIOF;
-  motor_hw_assign.inb_pin = GPIO_PIN_9;
-  motor_hw_assign.pwm_gpio = GPIOE;
-  motor_hw_assign.pwm_pin = GPIO_PIN_5;
-  motor_hw_assign.pwm_af = GPIO_AF3_TIM9;
+  motor_hw_assign.ina_gpio = GPIOC;
+  motor_hw_assign.ina_pin = GPIO_PIN_1;
+  motor_hw_assign.inb_gpio = GPIOC;
+  motor_hw_assign.inb_pin = GPIO_PIN_2;
+  motor_hw_assign.pwm_gpio = GPIOB;
+  motor_hw_assign.pwm_pin = GPIO_PIN_15;
+  motor_hw_assign.pwm_af = GPIO_AF9_TIM12;
   motor_hw_assign.cs_gpio = 0;
   motor_hw_assign.cs_pin = 0;
   motor_hw_assign.cs_af = 0;
-  motor_hw_assign.timer_instance = TIM9;
-  motor_hw_assign.timer_channel = TIM_CHANNEL_1;
+  motor_hw_assign.timer_instance = TIM12;
+  motor_hw_assign.timer_channel = TIM_CHANNEL_2;
   if(vnh5019_init(&motor_pivot_l_state, &motor_hw_assign) != 0) {
     Error_Handler();
   }
 
   // setup right pivot motor controller
-  motor_hw_assign.ina_gpio = GPIOE;
-  motor_hw_assign.ina_pin = GPIO_PIN_3;
-  motor_hw_assign.inb_gpio = GPIOE;
-  motor_hw_assign.inb_pin = GPIO_PIN_4;
-  motor_hw_assign.pwm_gpio = GPIOE;
-  motor_hw_assign.pwm_pin = GPIO_PIN_6;
-  motor_hw_assign.pwm_af = GPIO_AF3_TIM9;
+  motor_hw_assign.ina_gpio = GPIOB;
+  motor_hw_assign.ina_pin = GPIO_PIN_12;
+  motor_hw_assign.inb_gpio = GPIOB;
+  motor_hw_assign.inb_pin = GPIO_PIN_13;
+  motor_hw_assign.pwm_gpio = GPIOB;
+  motor_hw_assign.pwm_pin = GPIO_PIN_14;
+  motor_hw_assign.pwm_af = GPIO_AF9_TIM12;
   motor_hw_assign.cs_gpio = 0;
   motor_hw_assign.cs_pin = 0;
   motor_hw_assign.cs_af = 0;
-  motor_hw_assign.timer_instance = TIM9;
-  motor_hw_assign.timer_channel = TIM_CHANNEL_2;
+  motor_hw_assign.timer_instance = TIM12;
+  motor_hw_assign.timer_channel = TIM_CHANNEL_1;
   if(vnh5019_init(&motor_pivot_r_state, &motor_hw_assign) != 0) {
     Error_Handler();
   }
 
   // setup 3rd motor controller
-  motor_hw_assign.ina_gpio = GPIOG;
-  motor_hw_assign.ina_pin = GPIO_PIN_2;
-  motor_hw_assign.inb_gpio = GPIOG;
-  motor_hw_assign.inb_pin = GPIO_PIN_3;
+  motor_hw_assign.ina_gpio = GPIOF;
+  motor_hw_assign.ina_pin = GPIO_PIN_8;
+  motor_hw_assign.inb_gpio = GPIOF;
+  motor_hw_assign.inb_pin = GPIO_PIN_9;
   motor_hw_assign.pwm_gpio = GPIOF;
   motor_hw_assign.pwm_pin = GPIO_PIN_6;
   motor_hw_assign.pwm_af = GPIO_AF3_TIM10;
@@ -180,40 +180,71 @@ int main(void)
   SPI_HandleTypeDef SpiHandle;
 
   // set up SCK/MISO/MOSI gpio
+  // // NSS
+  // gpio_init.Pin = GPIO_PIN_12;
+  // gpio_init.Mode = GPIO_MODE_AF_PP;
+  // gpio_init.Pull = GPIO_NOPULL;
+  // gpio_init.Speed = GPIO_SPEED_FAST;
+  // gpio_init.Alternate = GPIO_AF5_SPI2;
+  // HAL_GPIO_Init(GPIOB, &gpio_init);
+  // // SCK
+  // gpio_init.Pin = GPIO_PIN_13;
+  // gpio_init.Mode = GPIO_MODE_AF_PP;
+  // gpio_init.Pull = GPIO_NOPULL;
+  // gpio_init.Speed = GPIO_SPEED_FAST;
+  // gpio_init.Alternate = GPIO_AF5_SPI2;
+  // HAL_GPIO_Init(GPIOB, &gpio_init);
+  // // MISO
+  // gpio_init.Pin = GPIO_PIN_14;
+  // gpio_init.Mode = GPIO_MODE_AF_PP;
+  // gpio_init.Pull = GPIO_NOPULL;
+  // gpio_init.Speed = GPIO_SPEED_FAST;
+  // gpio_init.Alternate = GPIO_AF5_SPI2;
+  // HAL_GPIO_Init(GPIOB, &gpio_init);
+  // // MOSI
+  // gpio_init.Pin = GPIO_PIN_15;
+  // gpio_init.Mode = GPIO_MODE_AF_PP;
+  // gpio_init.Pull = GPIO_NOPULL;
+  // gpio_init.Speed = GPIO_SPEED_FAST;
+  // gpio_init.Alternate = GPIO_AF5_SPI2;
+  // HAL_GPIO_Init(GPIOB, &gpio_init);
+
   // NSS
-  gpio_init.Pin = GPIO_PIN_12;
+  gpio_init.Pin = GPIO_PIN_4;
   gpio_init.Mode = GPIO_MODE_AF_PP;
   gpio_init.Pull = GPIO_NOPULL;
   gpio_init.Speed = GPIO_SPEED_FAST;
-  gpio_init.Alternate = GPIO_AF5_SPI2;
-  HAL_GPIO_Init(GPIOB, &gpio_init);
+  gpio_init.Alternate = GPIO_AF5_SPI4;
+  HAL_GPIO_Init(GPIOE, &gpio_init);
   // SCK
-  gpio_init.Pin = GPIO_PIN_13;
+  gpio_init.Pin = GPIO_PIN_2;
   gpio_init.Mode = GPIO_MODE_AF_PP;
   gpio_init.Pull = GPIO_NOPULL;
   gpio_init.Speed = GPIO_SPEED_FAST;
-  gpio_init.Alternate = GPIO_AF5_SPI2;
-  HAL_GPIO_Init(GPIOB, &gpio_init);
+  gpio_init.Alternate = GPIO_AF5_SPI4;
+  HAL_GPIO_Init(GPIOE, &gpio_init);
   // MISO
-  gpio_init.Pin = GPIO_PIN_14;
+  gpio_init.Pin = GPIO_PIN_5;
   gpio_init.Mode = GPIO_MODE_AF_PP;
   gpio_init.Pull = GPIO_NOPULL;
   gpio_init.Speed = GPIO_SPEED_FAST;
-  gpio_init.Alternate = GPIO_AF5_SPI2;
-  HAL_GPIO_Init(GPIOB, &gpio_init);
+  gpio_init.Alternate = GPIO_AF5_SPI4;
+  HAL_GPIO_Init(GPIOE, &gpio_init);
   // MOSI
-  gpio_init.Pin = GPIO_PIN_15;
+  gpio_init.Pin = GPIO_PIN_6;
   gpio_init.Mode = GPIO_MODE_AF_PP;
   gpio_init.Pull = GPIO_NOPULL;
   gpio_init.Speed = GPIO_SPEED_FAST;
-  gpio_init.Alternate = GPIO_AF5_SPI2;
-  HAL_GPIO_Init(GPIOB, &gpio_init);
+  gpio_init.Alternate = GPIO_AF5_SPI4;
+  HAL_GPIO_Init(GPIOE, &gpio_init);
 
   /*##-1- Configure the SPI peripheral #######################################*/
   /* Enable SPI clock */
-  __SPI2_CLK_ENABLE();
+  // __SPI2_CLK_ENABLE();
+  __SPI4_CLK_ENABLE();
   /* Set the SPI parameters */
-  SpiHandle.Instance               = SPI2;
+  // SpiHandle.Instance               = SPI2;
+  SpiHandle.Instance               = SPI4;
   SpiHandle.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   SpiHandle.Init.Direction         = SPI_DIRECTION_2LINES;
   SpiHandle.Init.CLKPhase          = SPI_PHASE_2EDGE; // CPHA = 1
@@ -304,7 +335,10 @@ int main(void)
     spi_tx_buffer[1] = 0xBB;
     spi_tx_buffer[2] = 0xCC;
     spi_tx_buffer[3] = 0xDD;
-    spi_status = HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t*)spi_tx_buffer, (uint8_t *)spi_rx_buffer, 1, 1000);
+    *(uint32_t *)spi_rx_buffer = 0;
+    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET);
+    spi_status = HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t*)spi_tx_buffer, (uint8_t *)spi_rx_buffer, 4, 1000);
+    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);
     spi_result = spi_rx_buffer[0] | (spi_rx_buffer[1] << 8) | (spi_rx_buffer[2] << 16) | (spi_rx_buffer[3]<< 24);
     sprintf((char *)&spi_readout_buffer, "SPI: status=%d, data=0x%x\n", spi_status, spi_result);
     LCD_UsrLog((char *)&spi_readout_buffer);
