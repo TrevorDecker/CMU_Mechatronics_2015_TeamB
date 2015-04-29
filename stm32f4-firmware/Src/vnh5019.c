@@ -123,17 +123,8 @@ int vnh5019_init(vnh5019_state_t *state, vnh5019_hw_assign_t *hw_assign) {
     return -1;
   }
 
-  /* Configure the output compare channels for PWM:
-     + polarity = low so that smaller duty gives smaller on time
-     + pulse sets duty cycle out of 
-   */ 
-  // state->timer_oc_config.OCMode = TIM_OCMODE_PWM1;
-  // state->timer_oc_config.OCPolarity = TIM_OCPOLARITY_HIGH;
-  // ugh... wtf st
-
-  // set output compare to 0 output
+  /* Configure the output compare channels for PWM: */
   vnh5019_init_oc(state->hw_assign.timer_instance, state->hw_assign.timer_channel);
-  vnh5019_set_oc(state->hw_assign.timer_instance, state->hw_assign.timer_channel, 0);
 
   /* Configure GPIO pins we are using for output. */
   GPIO_InitTypeDef gpio_init;
@@ -165,9 +156,9 @@ int vnh5019_init(vnh5019_state_t *state, vnh5019_hw_assign_t *hw_assign) {
   // todo: set up adc for current sense
 
   // set default values
-  // if(vnh5019_set(state, 0, FORWARD) != 0) {
-  //   return -1;
-  // }
+  if(vnh5019_set(state, 0, FORWARD) != 0) {
+    return -1;
+  }
 
   // completed without errors
   return 0;
@@ -242,20 +233,6 @@ int vnh5019_set_speed(vnh5019_state_t *state, uint16_t speed) {
   if (vnh5019_set_oc(state->hw_assign.timer_instance, state->hw_assign.timer_channel, speed) != 0) {
     return -1;
   }
-
-  // // Set the pulse (duty) value for channel we're using.
-  // state->timer_oc_config.Pulse = state->speed;  
-  // if(HAL_TIM_PWM_ConfigChannel(&(state->timer_handle),
-  //                              &(state->timer_oc_config),
-  //                              state->hw_assign.timer_channel) != HAL_OK) {
-  //   return -1;
-  // }
-
-  // // Start signal generation
-  // if(HAL_TIM_PWM_Start(&(state->timer_handle),
-  //                      state->hw_assign.timer_channel) != HAL_OK) {
-  //   return -1;
-  // }
 
   // completed without errors
   return 0;
