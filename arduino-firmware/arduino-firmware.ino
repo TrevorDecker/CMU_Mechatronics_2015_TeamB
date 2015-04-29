@@ -14,62 +14,62 @@ typedef enum vnh5019_direction {
 #define LEFT_GRIPPER_CS_PIN      A8   //4
 
 //right gripper speed controller
-#define RIGHT_GRIPPER_INA_PIN    -1  //5
-#define RIGHT_GRIPPER_INB_PIN    -1  //6
-#define RIGHT_GRIPPER_PWM_PIN    -1  //7
-#define RIGHT_GRIPPER_CS_PIN     -1  //8
+#define RIGHT_GRIPPER_INA_PIN    -1  //5       //TODO set
+#define RIGHT_GRIPPER_INB_PIN    -1  //6       //TODO set
+#define RIGHT_GRIPPER_PWM_PIN    -1  //7       //TODO set
+#define RIGHT_GRIPPER_CS_PIN     -1  //8       //TODO set
 
 //extsion speed controller 
-#define EXTENSION_MOTOR_INA_PIN  -1  //9
-#define EXTENSION_MOTOR_INB_PIN  -1  //10
-#define EXTENSION_MOTOR_PWM_PIN  -1  //11
-#define EXTENSION_MOTOR_CS_PIN   -1  //12
+#define EXTENSION_MOTOR_INA_PIN  -1  //9       //TODO set
+#define EXTENSION_MOTOR_INB_PIN  -1  //10      //TODO set
+#define EXTENSION_MOTOR_PWM_PIN  -1  //11      //TODO set
+#define EXTENSION_MOTOR_CS_PIN   -1  //12      //TODO set
 
 //cleaner speed contoller
-#define CLEANER_MOTOR_INA_PIN    -1  //13
-#define CLEANER_MOTOR_INB_PIN    -1  //14
-#define CLEANER_MOTOR_PWM_PIN    -1  //15
-#define CLEANER_MOTOR_CS_PIN     -1  //16
-#define CLEANER_LEFT_BTN_PIN     -1  //17
-#define CLEANER_RIGHT_BTN_PIN    -1  //18
+#define CLEANER_MOTOR_INA_PIN    -1  //13      //TODO set
+#define CLEANER_MOTOR_INB_PIN    -1  //14      //TODO set
+#define CLEANER_MOTOR_PWM_PIN    -1  //15      //TODO set
+#define CLEANER_MOTOR_CS_PIN     -1  //16      //TODO set
+#define CLEANER_LEFT_BTN_PIN     -1  //17      //TODO set
+#define CLEANER_RIGHT_BTN_PIN    -1  //18      //TODO set
 
-#define LEFT_GRIPPER_POT_PIN     -1  //19
-#define RIGHT_GRIPPER_POT_PIN    -1  //20
-#define EXTESNION_SENSOR_POT_PIN -1  //21
+#define LEFT_GRIPPER_POT_PIN     -1  //19      //TODO set
+#define RIGHT_GRIPPER_POT_PIN    -1  //20      //TODO set
+#define EXTESNION_SENSOR_POT_PIN -1  //21      //TODO set
 
 
-#define USER_BTN_TWO_PIN         -1   //22
-#define USER_BTN_ONE_PIN         -1   //23
-#define USER_POT_PIN             -1   //24
+#define USER_BTN_TWO_PIN         -1   //22     //TODO set
+#define USER_BTN_ONE_PIN         -1   //23     //TODO set
+#define USER_POT_PIN             -1   //24     //TODO set
 
-#define WINDOW_WIDTH             0
-#define WINDOW_HEIGHT            0
+#define WINDOW_WIDTH             0             //TODO set
+#define WINDOW_HEIGHT            0             //TODO set
 
-#define LEFT_GRIPPER_P           0
-#define LEFT_GRIPPER_I           0
-#define LEFT_GRIPPER_D           0
+#define LEFT_GRIPPER_P           0             //TODO set
+#define LEFT_GRIPPER_I           0             //TODO set
+#define LEFT_GRIPPER_D           0             //TODO set
 
-#define RIGHT_GRIPPER_P          0
-#define RIGHT_GRIPPER_I          0
-#define RIGHT_GRIPPER_D          0
+#define RIGHT_GRIPPER_P          0             //TODO set
+#define RIGHT_GRIPPER_I          0             //TODO set
+#define RIGHT_GRIPPER_D          0             //TODO set
 
-#define EXTENSION_P              0
-#define EXTENSION_I              0
-#define EXTENSION_D              0
-#define EXTENSION_THRESHOLD      0
+#define EXTENSION_P              0             //TODO set
+#define EXTENSION_I              0             //TODO set
+#define EXTENSION_D              0             //TODO set
+#define EXTENSION_THRESHOLD      0             //TODO set
 
-#define GRIPPER_SPEED             128
+#define GRIPPER_SPEED             30          //TODO set
 
-#define GRIPPER_LOCK_DIR          FORWARD
-#define GRIPPER_UNLOCK_DIR        REVERSE
-#define MOVE_DOWN_BETWEEN_CLEANS  0
-#define ROBOT_HEIGHT              0
-#define CLEANER_SPEED             0
-#define CLEANER_RIGHT_DIR         FORWARD
-#define CLEANER_LEFT_DIR          REVERSE
-#define MOVEING_AVERAGE_ARRAY_SIZE 10
+#define GRIPPER_LOCK_DIR          FORWARD      //TODO set
+#define GRIPPER_UNLOCK_DIR        REVERSE      //TODO set
+#define MOVE_DOWN_BETWEEN_CLEANS  0            //TODO set
+#define ROBOT_HEIGHT              0            //TODO set
+#define CLEANER_SPEED             0            //TODO set
+#define CLEANER_RIGHT_DIR         FORWARD      //TODO set
+#define CLEANER_LEFT_DIR          REVERSE      //TODO set
+#define MOVEING_AVERAGE_ARRAY_SIZE 20          //TODO set
 
-#define GRIPPER_CS_GRIP_THRESHOLD 0
+#define GRIPPER_CS_GRIP_THRESHOLD 50            //TODO set 
 /***************************************************************
  ******************* button.h **********************************
  **************************************************************/
@@ -196,7 +196,7 @@ void moving_average_init(moving_average_filter_state_t* filter){
  }
  
 void moving_average_add_data_point(moving_average_filter_state_t* filter,int newDataPoint){
-    filter->oldestIndex = filter->oldestIndex + 1 % MOVEING_AVERAGE_ARRAY_SIZE;
+    filter->oldestIndex = (filter->oldestIndex + 1) % MOVEING_AVERAGE_ARRAY_SIZE;
     filter->dataPoints[filter->oldestIndex] = newDataPoint;  
 }
 
@@ -357,16 +357,37 @@ void gripper_init(gripper_state_t *gripper,int ina_pin,int inb_pin,int pwm_pin,i
 
 //blocking
 void gripper_lock(gripper_state_t *gripper){
-  while(vnh5019_get_cs_value(&gripper->motor) < GRIPPER_CS_GRIP_THRESHOLD){
+   moving_average_filter_state_t cs_filter;
+  moving_average_init(&cs_filter);
+  //add init values 
+  for(int i = 0;i<MOVEING_AVERAGE_ARRAY_SIZE;i++){
+      moving_average_add_data_point(&cs_filter,vnh5019_get_cs_value(&gripper->motor));
+  }
+  while(moving_average_get_average(&cs_filter) < GRIPPER_CS_GRIP_THRESHOLD){
+      Serial.println(moving_average_get_average(&cs_filter));
+      moving_average_add_data_point(&cs_filter,vnh5019_get_cs_value(&gripper->motor));
      vnh5019_set(&gripper->motor,GRIPPER_SPEED,GRIPPER_LOCK_DIR);
+     delay(20);
   }  
+     vnh5019_set(&gripper->motor,0,GRIPPER_LOCK_DIR);
+
 }
 
 //blocking
 void gripper_unlock(gripper_state_t *gripper){
-  while(vnh5019_get_cs_value(&gripper->motor) < GRIPPER_CS_GRIP_THRESHOLD){
+  moving_average_filter_state_t cs_filter;
+  moving_average_init(&cs_filter);
+  //add init values 
+  for(int i = 0;i<MOVEING_AVERAGE_ARRAY_SIZE;i++){
+      moving_average_add_data_point(&cs_filter,vnh5019_get_cs_value(&gripper->motor));
+  }
+  while(moving_average_get_average(&cs_filter) > GRIPPER_CS_GRIP_THRESHOLD){
+      moving_average_add_data_point(&cs_filter,vnh5019_get_cs_value(&gripper->motor));
      vnh5019_set(&gripper->motor,GRIPPER_SPEED,GRIPPER_UNLOCK_DIR);
+     delay(20);
   }  
+     vnh5019_set(&gripper->motor,0,GRIPPER_UNLOCK_DIR);
+
 }
 /*****************************************************************
  ********************** Cleaner.c.c ********************************
@@ -560,13 +581,23 @@ void setup() {
   current_height = WINDOW_HEIGHT;
   gripper_init(&left_gripper,LEFT_GRIPPER_INA_PIN,LEFT_GRIPPER_INB_PIN,LEFT_GRIPPER_PWM_PIN,LEFT_GRIPPER_CS_PIN);
   gripper_init(&right_gripper,RIGHT_GRIPPER_INA_PIN,RIGHT_GRIPPER_INB_PIN,RIGHT_GRIPPER_PWM_PIN,RIGHT_GRIPPER_CS_PIN);
-  vnh5019_set(&left_gripper.motor,128,FORWARD); 
+  vnh5019_set(&left_gripper.motor,50,FORWARD); 
+
+  gripper_lock(&left_gripper);
+   
+  
 }
 
 // the loop routine runs over and over again forever:
 void loop() {
+  /*
   // print out the value you read:
- Serial.println(vnh5019_get_cs_value(&left_gripper.motor));
+ Serial.println(moving_average_get_average(&test_filter));
+ if() > 90){
+     vnh5019_set(&left_gripper.motor,0,FORWARD); 
+ }
+ */
+ 
   delay(20);        // delay in between reads for stability
 }
 
