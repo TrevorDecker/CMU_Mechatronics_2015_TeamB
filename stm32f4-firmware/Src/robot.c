@@ -7,7 +7,6 @@
    ChangeLog: NONE
 */
 
-//TODO add motor control 
 //TODO add sensors
 //TODO move to freeRTOS
 //TODO clean up code
