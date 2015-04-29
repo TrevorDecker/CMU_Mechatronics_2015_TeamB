@@ -1,6 +1,5 @@
 #include "cleaner.h"
 
-
 // ****************************************
 // *********   Cleaner Code ***************
 // ****************************************
@@ -19,6 +18,7 @@ int cleanLeft(cleaner_state_t * state){
     vnh5019_set(&state->cleanerMotor,CLEANER_SPEED,CLEANER_LEFT);
     // delay(20); TODO 
     // }
+    //TODO set cleaner offset position
     return TRUE;
 }
 
@@ -28,6 +28,7 @@ int cleanRight(cleaner_state_t * state){
   // while(btn_not_pressed){ TODO 
     vnh5019_set(&state->cleanerMotor,CLEANER_SPEED,CLEANER_RIGHT);
     //  }
+    //TODO set cleaner offset position 
     return TRUE;
 }
 
@@ -52,7 +53,7 @@ int cleanerClearWindow(cleaner_state_t* state){
 //move cleaner left and right a predetermined number of times which should leave the window cleaned 
 //blocking 
 int cleanThisLevel(cleaner_state_t* state){
-  moveCleanerLeft(state);
+  cleanLeft(state);
   for(int pass = 0;pass<3;pass++){
     cleanRight(state);
     cleanLeft(state);
@@ -61,8 +62,12 @@ int cleanThisLevel(cleaner_state_t* state){
 
 //uses pid contorler 
 //not blocking 
-void  cleanTo(cleaner_state_t* state, double pointToCLeanTo){
-    //TODO
+void  cleanTo(cleaner_state_t* state, double pointToCleanTo){
+  pid_state_t *pid_state;
+  //pid_init params: pid_state_t, motor_state,output_limited,max_speed,set_point,error_threshold,p,i,d 
+  pidInit(pid_state,&state->cleanerMotor,FALSE,0,pointToCleanTo,CLEANER_ERROR_THRESHOLD,CLEANER_P,CLEANER_I,CLEANER_D);
+  pid_block_until_goal_reached(pid_state);
+  releasePID(pid_state);
 }
 
 int homeCleaner(cleaner_state_t* state){

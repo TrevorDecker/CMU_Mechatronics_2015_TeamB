@@ -12,6 +12,8 @@
 #define LEVEL_THREASHOLD .1
 #define ROBOT_HEIGHT .15 //meters 
 
+#define USER_BTN_GPIO -1
+#define USER_BTN_GPIO_PIN -1
 //paramaters of the robot ie the size of the robot
 ///////////////////////////////////////////////////
 ///////////////  CLEANER VALUES //////////////////
@@ -25,6 +27,12 @@
 #define CLEANER_MAX_POSITION_ALONG_ARM 2
 #define CLEANER_MIN_POSITION_APPROACH 0
 #define CLEANER_MAX_POSITION_APPROACH 1
+
+#define CLEANER_ERROR_THRESHOLD 0
+
+#define CLEANER_P 0
+#define CLEANER_I 0
+#define CLEANER_D 0
 
 ////////////////////////////////////////////////
 //////////////  EXTENSION SYSTEM //////////////
@@ -51,6 +59,10 @@
 #define RIGHT_GRIPPER_MAX_ANGLE 0
 #define RIGHT_GRIPPER_MIN_ANGLE 0
 
+#define GRIPPER_LOCK_SPEED 128
+#define GRIPPER_LOCK_DIRECTION 1
+#define GRIPPER_CURRENT_SENSE_THREASHOLD 200
+
 #define LEFT_GRIPPER_MOTOR_DIRECTION_A_PIN -1
 #define LEFT_GRIPPER_MOTOR_DIRECTION_B_PIN -1
 #define LEFT_GRIPPER_MOTOR_PWM_PIN -1
@@ -62,6 +74,10 @@
 #define DEFAULT_LEFT_GRIPPER_POSITION 0
 #define DEFAULT_RIGHT_GRIPPER_POSITION 0
 
+#define GRIPPER_P 0
+#define GRIPPER_I 0
+#define GRIPPER_D 0
+#define GRIPPER_MAX_SPEED 0
 
 //TODO define stepper motors pin 
 

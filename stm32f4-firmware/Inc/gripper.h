@@ -3,8 +3,11 @@
 #ifndef _GRIPPER_H__
 #define _GRIPPER_H__
 
+#include "vnh5019.h"
 #include "logicValues.h"
 #include "settings.h"
+#include "pid.h"
+#include <math.h>
 //structrue defnition
 typedef enum gripper_status{
   GRIPPED,
@@ -20,9 +23,10 @@ typedef struct gripperSystem{
   double desiredAngleRobotFrame;
   double x;
   double y;
+  vnh5019_state_t gripperMotor;
 } gripper_state_t;
 
-//methods 
+//methods
 void gripper_set_x(gripper_state_t *gripper,double newX);
 void gripper_set_y(gripper_state_t *gripper,double newY);
 double gripper_get_x(gripper_state_t *gripper);

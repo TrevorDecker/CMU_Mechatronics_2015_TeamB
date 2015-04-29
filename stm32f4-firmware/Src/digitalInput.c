@@ -7,6 +7,24 @@ void digitalInputInit(digital_input_state_t* state,int gpio,int gpioPin){
   //TODO setup intrupts 
 }
 
+void digitalInputRelease(digital_input_state_t*state){
+  //TODO 
+}
+
+//will block until a button is pressed 
+//this function will block 
+void digitalInputButtonPressed(digital_input_state_t*state){
+  digitalInputAck(state);
+  while(!digitalInputGetWasHigh(state)){
+    //    delay(20);  TODO
+  }
+  digitalInputAck(state);
+  while(!digitalInputGetWasLow(state)){
+    //   delay(2);    TODO 
+  }
+  digitalInputAck(state);
+}
+
 inline int digitalInputGetGpio(digital_input_state_t* state){
   return state->gpio;
 }
@@ -43,6 +61,7 @@ inline void digitalInputAck(digital_input_state_t* state){
   state->wasHigh = FALSE;
   state->wasLow = FALSE;
 }
+
 
 //TODO add interupt code 
 

@@ -20,8 +20,8 @@
   
 #include "robot.h"
 #include <stdio.h>
-#include <math.h>
 
+/*
 //TODO use math abs instead once it gets linked in 
 double abs(double input){
   if(input > 0){
@@ -47,6 +47,7 @@ double max(double a,double b){
     return a;
   }
 }
+*/
 
 
 
@@ -56,13 +57,15 @@ void error(const char* thisError){
   printf("ERROR: %s \n",thisError);
 }
 
-double gripper_max_height_one_motion(gripper_state_t * thisGripper,gripper_state_t* otherGripper)
+//max height that the gripper can mvoe in one motion
+double gripperMaxHeightOneMotion(gripper_state_t * thisGripper,gripper_state_t* otherGripper)
 {
   //TODO
   return 0;
 }
 
-double gripper_minHeight_one_motion(gripper_state_t * thisGripper,gripper_state_t* otherGripper)
+//min height that the grippper can move in one motion 
+double gripperMinHeightOneMotion(gripper_state_t * thisGripper,gripper_state_t* otherGripper)
 {
   //TODO
   return 0;
@@ -96,7 +99,7 @@ int moveRightGripperToHeight(window_state_t *window,double newHeight){
   lockGripper(&window->robot.leftGripper);
   unlockGripper(&window->robot.rightGripper);
 
-  extend_to(&window->robot.extensionSystem,newExtension);
+  extendTo(&window->robot.extensionSystem,newExtension);
   rotateGripperTo(&window->robot.leftGripper,newTh);
   //TODO block until all motion is done 
   lockGripper(&window->robot.rightGripper);
@@ -131,7 +134,7 @@ int moveLeftGripperToHeight(window_state_t *window,double newHeight){
   lockGripper(&window->robot.rightGripper);
   unlockGripper(&window->robot.leftGripper);
 
-  extend_to(&window->robot.extensionSystem,newExtension);
+  extendTo(&window->robot.extensionSystem,newExtension);
   rotateGripperTo(&window->robot.rightGripper,newTh);
   //TODO block until all motion is done 
   lockGripper(&window->robot.leftGripper);
@@ -148,26 +151,26 @@ void moveToHeight(window_state_t * window,double newHeight)
   double dLeft = newHeight - window->robot.leftGripper.y;
   double dRight = newHeight - window->robot.rightGripper.y;
  
-  while(abs(window->robot.leftGripper.y - newHeight) > LEVEL_THREASHOLD || \ 
+  while(abs(window->robot.leftGripper.y - newHeight) > LEVEL_THREASHOLD ||   
 	abs(window->robot.rightGripper.y - newHeight) > LEVEL_THREASHOLD){
     //not at the desried height so lets move to it
     if(abs(dLeft) > abs(dRight)){
       //left is farther away so lets move it
       if(dLeft > 0){
 	//want to move down 
-	moveLeftGripperToHeight(window,min(newHeight,gripper_max_height_one_motion(&window->robot.leftGripper,&window->robot.rightGripper)));
+	moveLeftGripperToHeight(window,min(newHeight,gripperMaxHeightOneMotion(&window->robot.leftGripper,&window->robot.rightGripper)));
       }else{
 	//want to move up
-	moveLeftGripperToHeight(window,max(newHeight,gripper_minHeight_one_motion(&window->robot.leftGripper,&window->robot.rightGripper)));
+	moveLeftGripperToHeight(window,max(newHeight,gripperMinHeightOneMotion(&window->robot.leftGripper,&window->robot.rightGripper)));
       }
     }else{
       //right is farther away so lets move it
       if(dRight >0){
 	//want to move down 
-	moveRightGripperToHeight(window,min(newHeight,gripper_max_height_one_motion(&window->robot.rightGripper,&window->robot.leftGripper)));
+	moveRightGripperToHeight(window,min(newHeight,gripperMaxHeightOneMotion(&window->robot.rightGripper,&window->robot.leftGripper)));
       }else{
 	//want to move up 
-	moveRightGripperToHeight(window,max(newHeight,gripper_min_height_one_motion(&window->robot.rightGripper,&window->robot.leftGripper)));
+	moveRightGripperToHeight(window,max(newHeight,gripperMinHeightOneMotion(&window->robot.rightGripper,&window->robot.leftGripper)));
       }
     }
   }//while 
@@ -179,7 +182,7 @@ robot_state_t init_robot(){
   rotateGripperTo(&thisRobot.leftGripper,DEFAULT_LEFT_GRIPPER_POSITION);
   rotateGripperTo(&thisRobot.rightGripper,DEFAULT_RIGHT_GRIPPER_POSITION);
   homeCleaner(&thisRobot.cleaner);
-  home_extension(&thisRobot.extensionSystem);
+  homeExtension(&thisRobot.extensionSystem);
   
   //TODO waits until all processes are done
   //while(1){  
@@ -196,14 +199,17 @@ window_state_t attach_to_window(){
   window_state_t thisWindow;
   thisWindow.height = DEFAULT_WINDOW_HEIGHT;   //meters
   thisWindow.width  = DEFAULT_WINDOW_WIDTH;    //meters
+  digital_input_state_t btn_state;
+  digitalInputInit(&btn_state,USER_BTN_GPIO,USER_BTN_GPIO_PIN); 
 
   thisWindow.robot = init_robot();
-  extend_to(&thisWindow.robot.extensionSystem,thisWindow.width);
-  //TODO wait for button press
+  extendTo(&thisWindow.robot.extensionSystem,thisWindow.width);
+  digitalInputButtonPressed(&btn_state);
   lockGripper(&thisWindow.robot.leftGripper);
-  //TODO wait for button press
+  digitalInputButtonPressed(&btn_state);
   lockGripper(&thisWindow.robot.rightGripper);
-  //TODO wait for button press
+  digitalInputButtonPressed(&btn_state);
+  digitalInputRelease(&btn_state);
   return thisWindow;
 }
 
@@ -224,8 +230,11 @@ int cleanWindow(window_state_t *window){
 }
 
 void release_from_window(window_state_t *window){
-  //TODO wait for button press
+  digital_input_state_t btn_state;
+  digitalInputInit(&btn_state,USER_BTN_GPIO,USER_BTN_GPIO_PIN); 
+  digitalInputButtonPressed(&btn_state);
   unlockGripper(&window->robot.leftGripper);
-  //TODO wait for button press
+  digitalInputButtonPressed(&btn_state); 
   unlockGripper(&window->robot.rightGripper);
+  digitalInputRelease(&btn_state);
 }

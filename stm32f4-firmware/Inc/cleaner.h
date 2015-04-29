@@ -6,6 +6,7 @@
 #include "vnh5019.h"
 #include "settings.h"
 #include "logicValues.h"
+#include "pid.h"
 typedef struct cleanerSystem{
   //position of cleaner in arm frame
   double positionAlongArm; //distince along arm of robot
