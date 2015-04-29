@@ -5,6 +5,90 @@
  */ 
 
 
+/* Private Methods */
+int vnh5019_init_oc(TIM_TypeDef *timer_instance, uint32_t timer_channel) {
+  if(timer_instance == NULL) {
+    return -1;
+  }
+
+  // setup normal PWM output for desired channel
+  // CCxS: 0b00
+  // OCxFE: 0
+  // OCxPE: 1
+  // OCxM: 110
+  switch(timer_channel) {
+    case TIM_CHANNEL_1:
+      timer_instance->CCMR1 |= (TIM_CCMR1_OC1M_2 | TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1PE);
+      timer_instance->CCMR1 &= ~(TIM_CCMR1_OC1M_0 | TIM_CCMR1_OC1FE | TIM_CCMR1_CC1S_1 | TIM_CCMR1_CC1S_0);
+      // enable after configuration
+      timer_instance->CCER |= TIM_CCER_CC1E;
+    break;
+
+    case TIM_CHANNEL_2:
+      timer_instance->CCMR1 |= (TIM_CCMR1_OC2M_2 | TIM_CCMR1_OC2M_1 | TIM_CCMR1_OC2PE);
+      timer_instance->CCMR1 &= ~(TIM_CCMR1_OC2M_0 | TIM_CCMR1_OC2FE | TIM_CCMR1_CC2S_1 | TIM_CCMR1_CC2S_0);
+      // enable after configuration
+      timer_instance->CCER |= TIM_CCER_CC2E;
+    break;
+
+    case TIM_CHANNEL_3:
+      timer_instance->CCMR2 |= (TIM_CCMR2_OC3M_2 | TIM_CCMR2_OC3M_1 | TIM_CCMR2_OC3PE);
+      timer_instance->CCMR2 &= ~(TIM_CCMR2_OC3M_0 | TIM_CCMR2_OC3FE | TIM_CCMR2_CC3S_1 | TIM_CCMR2_CC3S_0);
+      // enable after configuration
+      timer_instance->CCER |= TIM_CCER_CC3E;
+    break;
+
+    case TIM_CHANNEL_4:
+      timer_instance->CCMR2 |= (TIM_CCMR2_OC4M_2 | TIM_CCMR2_OC4M_1 | TIM_CCMR2_OC4PE);
+      timer_instance->CCMR2 &= ~(TIM_CCMR2_OC4M_0 | TIM_CCMR2_OC4FE | TIM_CCMR2_CC4S_1 | TIM_CCMR2_CC4S_0);
+      // enable after configuration
+      timer_instance->CCER |= TIM_CCER_CC4E;
+    break;
+
+    default:
+      return -1;
+    break;
+  }
+
+  // actually enable timer
+  timer_instance->CR1 |= TIM_CR1_CEN;
+
+  return 0;
+}
+
+
+int vnh5019_set_oc(TIM_TypeDef *timer_instance, uint32_t timer_channel, uint32_t speed) {
+  if(timer_instance == NULL) {
+    return -1;
+  }
+
+  switch(timer_channel) {
+    case TIM_CHANNEL_1:
+      timer_instance->CCR1 = speed;
+    break;
+
+    case TIM_CHANNEL_2:
+      timer_instance->CCR2 = speed;
+    break;
+
+    case TIM_CHANNEL_3:
+      timer_instance->CCR3 = speed;
+    break;
+
+    case TIM_CHANNEL_4:
+      timer_instance->CCR4 = speed;
+    break;
+    
+    default:
+      return -1;
+    break;
+  }
+
+  return 0;
+}
+
+
+/* Public Methods */
 /**
  * Initializer for the vnh5019 structures. Sets up the timer, output compare,
  * and gpio peripherals based on the given hardware assignments. The provided
@@ -39,12 +123,8 @@ int vnh5019_init(vnh5019_state_t *state, vnh5019_hw_assign_t *hw_assign) {
     return -1;
   }
 
-  /* Configure the output compare channels for PWM:
-     + polarity = low so that smaller duty gives smaller on time
-     + pulse sets duty cycle out of 
-   */ 
-  state->timer_oc_config.OCMode = TIM_OCMODE_PWM1;
-  state->timer_oc_config.OCPolarity = TIM_OCPOLARITY_HIGH;
+  /* Configure the output compare channels for PWM: */
+  vnh5019_init_oc(state->hw_assign.timer_instance, state->hw_assign.timer_channel);
 
   /* Configure GPIO pins we are using for output. */
   GPIO_InitTypeDef gpio_init;
@@ -149,17 +229,8 @@ int vnh5019_set_speed(vnh5019_state_t *state, uint16_t speed) {
   // update saved state
   state->speed = speed;
 
-  // Set the pulse (duty) value for channel we're using.
-  state->timer_oc_config.Pulse = state->speed;  
-  if(HAL_TIM_PWM_ConfigChannel(&(state->timer_handle),
-                               &(state->timer_oc_config),
-                               state->hw_assign.timer_channel) != HAL_OK) {
-    return -1;
-  }
-
-  // Start signal generation
-  if(HAL_TIM_PWM_Start(&(state->timer_handle),
-                       state->hw_assign.timer_channel) != HAL_OK) {
+  // update hardware
+  if (vnh5019_set_oc(state->hw_assign.timer_instance, state->hw_assign.timer_channel, speed) != 0) {
     return -1;
   }
 
