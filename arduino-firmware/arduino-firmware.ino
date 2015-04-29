@@ -3,10 +3,10 @@
  ******************* SETTINGS.h ************************************
  ******************************************************************/
 //left gripper speed controller 
-#define LEFT_GRIPPER_INA_PIN     50   //1 
-#define LEFT_GRIPPER_INB_PIN     52   //2 
+#define LEFT_GRIPPER_INA_PIN     22   //1 
+#define LEFT_GRIPPER_INB_PIN     23   //2 
 #define LEFT_GRIPPER_PWM_PIN     2   //3
-#define LEFT_GRIPPER_CS_PIN      48   //4
+#define LEFT_GRIPPER_CS_PIN      A8   //4
 
 //right gripper speed controller
 #define RIGHT_GRIPPER_INA_PIN    -1  //5
@@ -71,8 +71,27 @@ int vnh5019_set_direction(vnh5019_state_t *state,
     vnh5019_state_t motor;   
 } gripper_state_t;
 
-
 void gripper_init(gripper_state_t *gripper,int ina_pin,int inb_pin,int pwm_pin,int cs_pin);
+void gripper_lock(gripper_state_t *gripper);
+void gripper_unlock(gripper_state_t *gripper);
+/***************************************************************
+*************************** cleaner.h **************************
+***************************************************************/
+typedef struct cleaner_state
+  {  
+      vnh5019_state_t motor;
+  }  cleaner_state_t;
+  
+void cleaner_init(cleaner_state_t *cleaner,int ina_pin,int inb_pin,int pwm_pin,int cs_pin);
+/***************************************************************
+***************** extension.h *********************
+******************************************************************/
+typedef struct extension_state
+{  
+    vnh5019_state_t motor;
+} extension_state_t;
+
+void extension_init(extension_state_t *extension,int ina_pin,int inb_pin,int pwm_pin,int cs_pin);
 /****************************************************************
  ***************************** vnh5019.c   *********************
  ***************************************************************/ 
@@ -123,7 +142,7 @@ vnh5019_direction_t vnh5019_get_direction(vnh5019_state_t *state) {
  // @param state: controller state structure.
  // @return: current sense value.
 uint8_t vnh5019_get_cs_value(vnh5019_state_t *state) {
-  return digitalRead(state->cs_pin);
+  return analogRead(state->cs_pin);
 }
 
  // Sets new outputs to the given controller. Controller state must have been
@@ -191,7 +210,27 @@ void gripper_init(gripper_state_t *gripper,int ina_pin,int inb_pin,int pwm_pin,i
   vnh5019_init(&gripper->motor,ina_pin,inb_pin,pwm_pin,cs_pin); 
 }
 
+void gripper_lock(gripper_state_t *gripper){
+  //TODO
+}
 
+void gripper_unlock(gripper_state_t *gripper){
+   //TODO  
+}
+/*****************************************************************
+ ********************** Cleaner.c.c ********************************
+ ****************************************************************/
+ void cleaner_init(cleaner_state_t *cleaner,int ina_pin,int inb_pin,int pwm_pin,int cs_pin){
+    vnh5019_init(&cleaner->motor,ina_pin,inb_pin,pwm_pin,cs_pin);
+ }
+ 
+ 
+ /****************************************************************
+ *********************** Extension.c *******************************
+ *****************************************************************/
+  void extension_init(extension_state_t *extension,int ina_pin,int inb_pin,int pwm_pin,int cs_pin){
+    vnh5019_init(&extension->motor,ina_pin,inb_pin,pwm_pin,cs_pin);
+ }
 
 /*****************************************************************
  **************************** main.c *****************************
@@ -209,15 +248,6 @@ void setup() {
   gripper_init(&left_gripper,LEFT_GRIPPER_INA_PIN,LEFT_GRIPPER_INB_PIN,LEFT_GRIPPER_PWM_PIN,LEFT_GRIPPER_CS_PIN);
   gripper_init(&right_gripper,RIGHT_GRIPPER_INA_PIN,RIGHT_GRIPPER_INB_PIN,RIGHT_GRIPPER_PWM_PIN,RIGHT_GRIPPER_CS_PIN);
   vnh5019_set(&left_gripper.motor,128,FORWARD); 
-  /*
-  vnh5019_hw_assign_t hw_assign;
-  hw_assign.ina_pin = 22;
-  hw_assign.inb_pin = 23;
-  hw_assign.pwm_pin = 2;
-  hw_assign.cs_pin = A0;
-  vnh5019_init(&g_motor_pivot_l, &hw_assign);
-  vnh5019_set(&g_motor_pivot_l, 128, FORWARD);
-  */  
 }
 
 // the loop routine runs over and over again forever:
