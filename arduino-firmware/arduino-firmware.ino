@@ -4,43 +4,48 @@ typedef enum vnh5019_direction {
   REVERSE,
 } vnh5019_direction_t;
 
+
+//TODO port to c++
 /*******************************************************************
  ******************* SETTINGS.h ************************************
  ******************************************************************/
 //left gripper speed controller 
-#define LEFT_GRIPPER_INA_PIN     22   //1 
-#define LEFT_GRIPPER_INB_PIN     23   //2 
-#define LEFT_GRIPPER_PWM_PIN     2   //3
-#define LEFT_GRIPPER_CS_PIN      A8   //4
+#define LEFT_GRIPPER_INA_PIN     27   //1 
+#define LEFT_GRIPPER_INB_PIN     26   //2 
+#define LEFT_GRIPPER_PWM_PIN     5    //3
+#define LEFT_GRIPPER_CS_PIN      A2   //4
 
 //right gripper speed controller
-#define RIGHT_GRIPPER_INA_PIN    -1  //5       //TODO set
-#define RIGHT_GRIPPER_INB_PIN    -1  //6       //TODO set
-#define RIGHT_GRIPPER_PWM_PIN    -1  //7       //TODO set
-#define RIGHT_GRIPPER_CS_PIN     -1  //8       //TODO set
+#define RIGHT_GRIPPER_INA_PIN    23  //5       
+#define RIGHT_GRIPPER_INB_PIN    22  //6      
+#define RIGHT_GRIPPER_PWM_PIN    3  //7      
+#define RIGHT_GRIPPER_CS_PIN     A0  //8     
 
 //extsion speed controller 
-#define EXTENSION_MOTOR_INA_PIN  -1  //9       //TODO set
-#define EXTENSION_MOTOR_INB_PIN  -1  //10      //TODO set
-#define EXTENSION_MOTOR_PWM_PIN  -1  //11      //TODO set
-#define EXTENSION_MOTOR_CS_PIN   -1  //12      //TODO set
+#define EXTENSION_MOTOR_INA_PIN  29  //9     
+#define EXTENSION_MOTOR_INB_PIN  28  //10    
+#define EXTENSION_MOTOR_PWM_PIN  6  //11     
+#define EXTENSION_MOTOR_CS_PIN   A3  //12     
 
 //cleaner speed contoller
-#define CLEANER_MOTOR_INA_PIN    -1  //13      //TODO set
-#define CLEANER_MOTOR_INB_PIN    -1  //14      //TODO set
-#define CLEANER_MOTOR_PWM_PIN    -1  //15      //TODO set
-#define CLEANER_MOTOR_CS_PIN     -1  //16      //TODO set
-#define CLEANER_LEFT_BTN_PIN     -1  //17      //TODO set
-#define CLEANER_RIGHT_BTN_PIN    -1  //18      //TODO set
+#define CLEANER_MOTOR_INA_PIN    25  //13   
+#define CLEANER_MOTOR_INB_PIN    24  //14     
+#define CLEANER_MOTOR_PWM_PIN    4  //15     
+#define CLEANER_MOTOR_CS_PIN     A1  //16     
 
-#define LEFT_GRIPPER_POT_PIN     -1  //19      //TODO set
-#define RIGHT_GRIPPER_POT_PIN    -1  //20      //TODO set
-#define EXTESNION_SENSOR_POT_PIN -1  //21      //TODO set
+#define CLEANER_LEFT_BTN1_PIN     40  //17      
+#define CLEANER_LEFT_BTN2_PIN     41  //18
+#define CLEANER_RIGHT_BTN1_PIN    42  //19      
+#define CLEANER_RIGHT_BTN2_PIN    43  //20
+
+#define LEFT_GRIPPER_POT_PIN     -1  //21      //TODO set
+#define RIGHT_GRIPPER_POT_PIN    -1  //22      //TODO set
+#define EXTESNION_SENSOR_POT_PIN -1  //23      //TODO set 
 
 
-#define USER_BTN_TWO_PIN         -1   //22     //TODO set
-#define USER_BTN_ONE_PIN         -1   //23     //TODO set
-#define USER_POT_PIN             -1   //24     //TODO set
+#define USER_BTN_TWO_PIN         -1   //24     //TODO set
+#define USER_BTN_ONE_PIN         -1   //25     //TODO set
+#define USER_POT_PIN             -1   //26     //TODO set
 
 #define WINDOW_WIDTH             0             //TODO set
 #define WINDOW_HEIGHT            0             //TODO set
@@ -64,7 +69,7 @@ typedef enum vnh5019_direction {
 #define GRIPPER_UNLOCK_DIR        REVERSE      //TODO set
 #define MOVE_DOWN_BETWEEN_CLEANS  0            //TODO set
 #define ROBOT_HEIGHT              0            //TODO set
-#define CLEANER_SPEED             0            //TODO set
+#define CLEANER_SPEED             255            //TODO set
 #define CLEANER_RIGHT_DIR         FORWARD      //TODO set
 #define CLEANER_LEFT_DIR          REVERSE      //TODO set
 #define MOVEING_AVERAGE_ARRAY_SIZE 20          //TODO set
@@ -73,131 +78,171 @@ typedef enum vnh5019_direction {
 /***************************************************************
  ******************* button.h **********************************
  **************************************************************/
-     typedef struct button_state{
-         uint8_t pin;
-         bool was_high;
-         bool was_low;
-     }   button_state_t;
-     
- void btn_init(button_state_t* btn,uint8_t pin);
- bool btn_get_value(button_state_t *btn);
- bool btn_get_was_high(button_state_t* btn );
- bool btn_get_was_low(button_state_t* btn);
- void btn_ack(button_state_t* btn);
- void update_btn_state(button_state_t* btn);
+class Button{
+ private:
+  uint8_t pin;
+  bool was_high;
+  bool was_low;
+  bool invert;
+ 
+ public:
+   Button(uint8_t pin,bool invert);
+   bool get_value();
+   bool get_was_high();
+   bool get_was_low();
+   void ack();
+   void update_state(); 
+   String get_state_string();
+};
+/*****************************************************************
+ ************************ moving average *************************
+ ****************************************************************/
+ class MovingAverageFilter{
+  private:
+    int dataPoints[MOVEING_AVERAGE_ARRAY_SIZE];
+    int oldestIndex;
+  
+  public:
+    int get_average();
+    void add_data_point(int newDataPoint);
+    MovingAverageFilter();
+ };
 
 /*****************************************************************
  ********************************* VNH5019.h *********************
  ****************************************************************/
-typedef struct moving_average_filter_state{
- int dataPoints[MOVEING_AVERAGE_ARRAY_SIZE];
- int oldestIndex; 
-} moving_average_filter_state_t;
+class Vnh5019{
+  private:
+    uint8_t ina_pin;
+    uint8_t inb_pin;
+    uint8_t pwm_pin;
+    uint8_t cs_pin;
+    uint8_t speed;
+    vnh5019_direction_t direction;
+  
+  // Methods
+  public:
+    Vnh5019(uint8_t ina_pin,uint8_t inb_pin,uint8_t pwm_pin,uint8_t cs_pin);
+    uint8_t get_speed();
+    vnh5019_direction_t get_direction();
+    uint8_t get_cs_value();
+    int set(uint8_t speed,vnh5019_direction_t direction);
+    int set_speed(uint8_t speed);
+    int set_direction(vnh5019_direction_t direction);    
+};
 
-void moving_average_init(moving_average_filter_state_t* filter);
-int  moving_average_get_average(moving_average_filter_state_t* filter);
-void moving_average_add_data_point(moving_average_filter_state_t* filter,int newDataPoint); 
-
-typedef struct vnh5019_state {
-  uint8_t ina_pin;
-  uint8_t inb_pin;
-  uint8_t pwm_pin;
-  uint8_t cs_pin;
-  uint8_t speed;
-  vnh5019_direction_t direction;
-} vnh5019_state_t;
-
-// Methods
-int vnh5019_init(vnh5019_state_t *state, uint8_t ina_pin,uint8_t inb_pin,uint8_t pwm_pin,uint8_t cs_pin);
-uint8_t vnh5019_get_speed(vnh5019_state_t *state);
-vnh5019_direction_t vnh5019_get_direction(vnh5019_state_t *state);
-uint8_t vnh5019_get_cs_value(vnh5019_state_t *state);
-int vnh5019_set(vnh5019_state_t *state,
-                uint8_t speed,
-                vnh5019_direction_t direction);
-int vnh5019_set_speed(vnh5019_state_t *state, uint8_t speed);
-int vnh5019_set_direction(vnh5019_state_t *state,
-                          vnh5019_direction_t direction);                          
+                      
 /****************************************************************
- ****************************** gripper.h ***********************
+ ****************************** Gripper.h ***********************
  ***************************************************************/
- typedef struct gripper_state
+ class Gripper
 {
-    vnh5019_state_t motor;   
-} gripper_state_t;
+ private:
+    MovingAverageFilter cs_filter;
+    Vnh5019* motor;
+ public:   
+    Gripper(int ina_pin,int inb_pin,int pwm_pin,int cs_pin);
+    void lock();
+    void unlock();
+    String getStateString();
+};
 
-void gripper_init(gripper_state_t *gripper,int ina_pin,int inb_pin,int pwm_pin,int cs_pin);
-void gripper_lock(gripper_state_t *gripper);
-void gripper_unlock(gripper_state_t *gripper);
+
 /***************************************************************
 *************************** cleaner.h **************************
 ***************************************************************/
-typedef struct cleaner_state
-  {  
-      vnh5019_state_t motor;
-      button_state_t left_limit_switch;
-      button_state_t right_limit_switch;
-      
-  }  cleaner_state_t;
+class Cleaner{  
+ private:
+    Vnh5019* motor;
+    Button* left_limit_switch1;
+    Button* left_limit_switch2;
+    Button* right_limit_switch1;
+    Button* right_limit_switch2;   
+
+ public:
+    Cleaner(int ina_pin,int inb_pin,int pwm_pin,int cs_pin);
+    void cleanLeft();
+    void cleanRight();
+    void cleanThisLevel();
+    void cleanWindow();
+    bool right_contact();
+    bool left_contact();
+    String get_state_string();
+ };
   
-void cleaner_init(cleaner_state_t *cleaner,int ina_pin,int inb_pin,int pwm_pin,int cs_pin);
-void cleanLeft(cleaner_state_t* cleaner);
-void cleanRight(cleaner_state_t* cleaner);
-void cleanThisLevel(cleaner_state_t* cleaner);
-void cleanWindow(cleaner_state_t* cleaner);
-bool cleaner_right_contact(cleaner_state_t* cleaner);
-bool cleaner_left_contact(cleaner_state_t* cleaner);
+
 
 
 /***************************************************************
 ***************** extension.h *********************
 ******************************************************************/
-typedef struct extension_state
-{  
-    vnh5019_state_t motor;
-    uint8_t sensor_pin;
-} extension_state_t;
+class ExtensionSystem{
+  //member variables
+  private:
+  Vnh5019* motor;
+  uint8_t sensor_pin;
+  
+  //methods 
+  public:
+  ExtensionSystem(int ina_pin,int inb_pin,int pwm_pin,int cs_pin);
+  void extend_to(int point_to_move_to);
+  int  get_current_position();
+  String getStateString();
+};
+/***************************************************************
+***************** Robot.h **************************************
+***************************************************************/
+class Robot{
+  private:
+   Gripper* left_gripper;
+   Gripper* right_gripper;
+   ExtensionSystem* extension_system;
+   Cleaner* cleaner_system; 
+   int current_height;
+   
+  public: 
+   Robot();
+   void move_to_height(int newHeight);
+   void clean_window();
+   void reportState();
 
-void extension_init(extension_state_t *extension,int ina_pin,int inb_pin,int pwm_pin,int cs_pin,int sensor_pin);
-void extend_to(extension_state_t *extension,int point_to_move_to);
-int extension_get_current_position(extension_state_t *extension);
+};
 
 
 /****************************************************************
  *********** Global defintions **********************************
  ****************************************************************/
-  gripper_state_t left_gripper; 
-  gripper_state_t right_gripper;
-  extension_state_t extension_system;
-  cleaner_state_t  cleaner_system;
-  button_state_t  user_btn_one;
-  int current_height;
+  Button*  user_btn_one;
+
   
   //for concurent motor operation 
  void update(){
-   update_btn_state(&user_btn_one);
+//   update_btn_state(&user_btn_one);
     //TODO
  } 
-  
-void moving_average_init(moving_average_filter_state_t* filter){
-   filter->oldestIndex = 0;
+ 
+ /**************************************************************
+ ************************ Moving average Filter ****************
+ **************************************************************/
+ MovingAverageFilter::MovingAverageFilter(){
+   oldestIndex = 0;
    for(int i =0; i< MOVEING_AVERAGE_ARRAY_SIZE;i++){
-      filter->dataPoints[i] = 0;
+      dataPoints[i] = 0;
    } 
 }
 
  
- int  moving_average_get_average(moving_average_filter_state_t* filter){
+ int  MovingAverageFilter::get_average(){
    int sum = 0;
    for(int i = 0;i<MOVEING_AVERAGE_ARRAY_SIZE;i++){
-      sum += filter->dataPoints[i]/MOVEING_AVERAGE_ARRAY_SIZE; 
+      sum += dataPoints[i]/MOVEING_AVERAGE_ARRAY_SIZE; 
    }
    return sum;   
  }
  
-void moving_average_add_data_point(moving_average_filter_state_t* filter,int newDataPoint){
-    filter->oldestIndex = (filter->oldestIndex + 1) % MOVEING_AVERAGE_ARRAY_SIZE;
-    filter->dataPoints[filter->oldestIndex] = newDataPoint;  
+void MovingAverageFilter::add_data_point(int newDataPoint){
+    oldestIndex = (oldestIndex + 1) % MOVEING_AVERAGE_ARRAY_SIZE;
+    dataPoints[oldestIndex] = newDataPoint;  
 }
 
 
@@ -214,44 +259,39 @@ void moving_average_add_data_point(moving_average_filter_state_t* filter,int new
  // @param hw_assign: hardware assignment structure that should be attached to
  //                   this state.
  // @return: 0 on successful completion, -1 on HAL error.
- int vnh5019_init(vnh5019_state_t *state, uint8_t ina_pin,uint8_t inb_pin,uint8_t pwm_pin,uint8_t cs_pin){
+ Vnh5019::Vnh5019(uint8_t ina_pin,uint8_t inb_pin,uint8_t pwm_pin,uint8_t cs_pin){
   // Copy initialization data. 
-  state->ina_pin = ina_pin;
-  state->inb_pin = inb_pin;
-  state->pwm_pin = pwm_pin;
-  state->cs_pin  = cs_pin;
-  state->speed = 0;
-  state->direction = FORWARD;
+  this->ina_pin = ina_pin;
+  this->inb_pin = inb_pin;
+  this->pwm_pin = pwm_pin;
+  this->cs_pin  = cs_pin;
+  this->speed = 0;
+  this->direction = FORWARD;
    
   //sets up pins for OUTPUT 
-  pinMode(state->ina_pin,OUTPUT);
-  pinMode(state->inb_pin,OUTPUT);
-
-  // completed without errors
-  return 0;
+  pinMode(ina_pin,OUTPUT);
+  pinMode(inb_pin,OUTPUT);
 }
 
  // Read the current speed from controller state structure.
  // @param state: controller state structure.
  // @return: the current speed.
-uint8_t vnh5019_get_speed(vnh5019_state_t *state) {
-  return state->speed;
+uint8_t Vnh5019::get_speed() {
+  return speed;
 }
 
  // Read the current direction from controller state structure.
  // @param state: controller state structure.
  // @return: the current direction.
-vnh5019_direction_t vnh5019_get_direction(vnh5019_state_t *state) {
-  return state->direction;
+vnh5019_direction_t Vnh5019::get_direction() {
+  return direction;
 }
-
-
 
  // Read the most recent current sense reading from controller state structure.
  // @param state: controller state structure.
  // @return: current sense value.
-uint8_t vnh5019_get_cs_value(vnh5019_state_t *state) {
-  return analogRead(state->cs_pin);
+uint8_t Vnh5019::get_cs_value() {
+  return analogRead(cs_pin);
 }
 
  // Sets new outputs to the given controller. Controller state must have been
@@ -260,13 +300,11 @@ uint8_t vnh5019_get_cs_value(vnh5019_state_t *state) {
  // @param speed: new speed to set.
  // @param direction: new direction to set.
  // @return: 0 on successful completion, -1 on HAL error.
-int vnh5019_set(vnh5019_state_t *state,
-                uint8_t speed,
-                vnh5019_direction_t direction) {
-  if(vnh5019_set_speed(state, speed) != 0) {
+int Vnh5019::set(uint8_t speed,vnh5019_direction_t direction) {
+  if(set_speed(speed) != 0) {
     return -1;
   }
-  if(vnh5019_set_direction(state, direction) != 0) {
+  if(set_direction(direction) != 0) {
     return -1;
   }
 
@@ -279,12 +317,12 @@ int vnh5019_set(vnh5019_state_t *state,
  // @param state: controller state structure.
  // @param speed: new speed to set.
  // @return: 0 on successful completion, -1 on HAL error.
-int vnh5019_set_speed(vnh5019_state_t *state, uint8_t speed) {
+int Vnh5019::set_speed(uint8_t speed) {
   // update saved state
-  state->speed = speed;
+  speed = speed;
 
   // update hardware
-  analogWrite(state->pwm_pin,speed); 
+  analogWrite(pwm_pin,speed); 
 
   // completed without errors
   return 0;
@@ -295,18 +333,17 @@ int vnh5019_set_speed(vnh5019_state_t *state, uint8_t speed) {
  // @param state: controller state structure.
  // @param direction: new direction to set.
  // @return: 0 on successful completion, -1 on HAL error.
-int vnh5019_set_direction(vnh5019_state_t *state,
-                          vnh5019_direction_t direction) {
+int Vnh5019::set_direction(vnh5019_direction_t direction) {
   // update saved state
-  state->direction = direction;
+  direction = direction;
 
   // set hw outputs
-  if(state->direction == FORWARD) {
-     digitalWrite(state->ina_pin,true);
-     digitalWrite(state->inb_pin,false);
+  if(direction == FORWARD) {
+     digitalWrite(ina_pin,true);
+     digitalWrite(inb_pin,false);
   } else {
-    digitalWrite(state->ina_pin,false);
-    digitalWrite(state->inb_pin,true); 
+    digitalWrite(ina_pin,false);
+    digitalWrite(inb_pin,true); 
   }
 
   // completed without errors
@@ -315,120 +352,178 @@ int vnh5019_set_direction(vnh5019_state_t *state,
 /****************************************************************
  **************** button.c **************************************
  ***************************************************************/
-  void btn_init(button_state_t* btn,uint8_t pin){
-      btn->pin = pin; 
+  Button::Button(uint8_t input_pin,bool invert){
+      pin = input_pin; 
+      pinMode(pin,INPUT_PULLUP);
+      this->invert = invert;
    }  
    
-  bool btn_get_was_high(button_state_t* btn ){
-     update_btn_state(btn);
-    return btn->was_high;
+  bool Button::get_was_high(){
+     update_state();
+    return was_high;
   }
 
-  bool btn_get_was_low(button_state_t* btn){
-     update_btn_state(btn);
-    return btn->was_low;
+  bool Button::get_was_low(){
+     update_state();
+    return was_low;
   }
 
-   void btn_ack(button_state_t* btn){
-       btn->was_low = false;
-       btn->was_high = false;
+   void Button::ack(){
+       was_low = false;
+       was_high = false;
    } 
    
-    void update_btn_state(button_state_t* btn){
-      if(digitalRead(btn->pin)){
+    void Button::update_state(){
+      if(get_value()){
           //true
-          btn->was_high = true;
+          was_high = true;
       }else{
-          btn->was_low = true;
+          was_low = true;
       }
     }
     
-  bool btn_get_value(button_state_t *btn){
-     return digitalRead(btn->pin);
+  bool Button::get_value(){
+    if(invert){
+     return digitalRead(pin) == false;
+    }else{
+      return digitalRead(pin);
+    }
+  }
+  
+  String Button::get_state_string(){
+   if(get_value()){
+    return "true";
+   }else{
+    return "false";
+   } 
   }
 
 
 /*****************************************************************
 *********************** Gripper.c ********************************
 *****************************************************************/
-void gripper_init(gripper_state_t *gripper,int ina_pin,int inb_pin,int pwm_pin,int cs_pin){
-  vnh5019_init(&gripper->motor,ina_pin,inb_pin,pwm_pin,cs_pin); 
+Gripper::Gripper(int ina_pin,int inb_pin,int pwm_pin,int cs_pin){
+  motor = new Vnh5019(ina_pin,inb_pin,pwm_pin,cs_pin); 
 }
 
 //blocking
-void gripper_lock(gripper_state_t *gripper){
-   moving_average_filter_state_t cs_filter;
-  moving_average_init(&cs_filter);
+void Gripper::lock(){
+  MovingAverageFilter cs_filter = *(new MovingAverageFilter());
   //add init values 
   for(int i = 0;i<MOVEING_AVERAGE_ARRAY_SIZE;i++){
-      moving_average_add_data_point(&cs_filter,vnh5019_get_cs_value(&gripper->motor));
+      cs_filter.add_data_point(motor->get_cs_value());
   }
-  while(moving_average_get_average(&cs_filter) < GRIPPER_CS_GRIP_THRESHOLD){
-      Serial.println(moving_average_get_average(&cs_filter));
-      moving_average_add_data_point(&cs_filter,vnh5019_get_cs_value(&gripper->motor));
-     vnh5019_set(&gripper->motor,GRIPPER_SPEED,GRIPPER_LOCK_DIR);
+  while(cs_filter.get_average() < GRIPPER_CS_GRIP_THRESHOLD){
+      cs_filter.add_data_point(motor->get_cs_value());
+     motor->set(GRIPPER_SPEED,GRIPPER_LOCK_DIR);
      delay(20);
   }  
-     vnh5019_set(&gripper->motor,0,GRIPPER_LOCK_DIR);
-
+     motor->set(0,GRIPPER_LOCK_DIR);
 }
 
 //blocking
-void gripper_unlock(gripper_state_t *gripper){
-  moving_average_filter_state_t cs_filter;
-  moving_average_init(&cs_filter);
+void Gripper::unlock(){
+  MovingAverageFilter cs_filter = *(new MovingAverageFilter());
   //add init values 
   for(int i = 0;i<MOVEING_AVERAGE_ARRAY_SIZE;i++){
-      moving_average_add_data_point(&cs_filter,vnh5019_get_cs_value(&gripper->motor));
+      cs_filter.add_data_point(motor->get_cs_value());
   }
-  while(moving_average_get_average(&cs_filter) > GRIPPER_CS_GRIP_THRESHOLD){
-      moving_average_add_data_point(&cs_filter,vnh5019_get_cs_value(&gripper->motor));
-     vnh5019_set(&gripper->motor,GRIPPER_SPEED,GRIPPER_UNLOCK_DIR);
+  while(cs_filter.get_average() > GRIPPER_CS_GRIP_THRESHOLD){
+    cs_filter.add_data_point(motor->get_cs_value());
+     motor->set(GRIPPER_SPEED,GRIPPER_LOCK_DIR);
      delay(20);
   }  
-     vnh5019_set(&gripper->motor,0,GRIPPER_UNLOCK_DIR);
+     motor->set(0,GRIPPER_UNLOCK_DIR);
 
 }
 /*****************************************************************
- ********************** Cleaner.c.c ********************************
+ ********************** Cleaner.c ********************************
  ****************************************************************/
- void cleaner_init(cleaner_state_t *cleaner,int ina_pin,int inb_pin,int pwm_pin,int cs_pin){
-    vnh5019_init(&cleaner->motor,ina_pin,inb_pin,pwm_pin,cs_pin);
+ Cleaner::Cleaner(int ina_pin,int inb_pin,int pwm_pin,int cs_pin){
+   left_limit_switch1 = new Button(CLEANER_LEFT_BTN1_PIN,true);
+   left_limit_switch2 = new Button(CLEANER_LEFT_BTN2_PIN,true);
+   right_limit_switch1 = new Button(CLEANER_RIGHT_BTN1_PIN,true);
+   right_limit_switch2 = new Button(CLEANER_RIGHT_BTN2_PIN,false);
+   motor = new Vnh5019(ina_pin,inb_pin,pwm_pin,cs_pin);
+ }
+ 
+ 
+bool Cleaner::right_contact(){
+   return right_limit_switch1->get_value()  == true|| right_limit_switch2->get_value() == true ; 
+}
+
+bool Cleaner::left_contact(){
+   return left_limit_switch1->get_value() == true || left_limit_switch2->get_value() == true; 
+}
+ 
+ //blocking 
+ void Cleaner::cleanLeft(){
+     while(!left_contact()){ 
+         motor->set(CLEANER_SPEED,CLEANER_LEFT_DIR);
+       }
+         motor->set(0,CLEANER_LEFT_DIR);
+ }
+
+ 
+ //blocking 
+ void Cleaner::cleanRight(){
+     while(!right_contact()){ 
+          motor->set(CLEANER_SPEED,CLEANER_RIGHT_DIR);
+      }
+          //turn off the motor since we are done
+          motor->set(0,CLEANER_RIGHT_DIR);
+
+ }
+ 
+ 
+ void Cleaner::cleanThisLevel(){
+     cleanLeft();
+     for(int pass = 0;pass < 3; pass ++){
+          cleanRight();
+          cleanLeft();
+     }
+ }
+ 
+ String Cleaner::get_state_string(){
+   String s1 = left_limit_switch1->get_state_string();
+   String s2 = left_limit_switch2->get_state_string();
+   String s3 = right_limit_switch1->get_state_string();
+   String s4 = right_limit_switch2->get_state_string();
+   return s1 + s2 + s3 + s4; //TODO 
  }
  
  
  /****************************************************************
  *********************** Extension.c *******************************
  *****************************************************************/
-  void extension_init(extension_state_t *extension,int ina_pin,int inb_pin,int pwm_pin,int cs_pin,int sensor_pin){
-    extension->sensor_pin = sensor_pin;
-    vnh5019_init(&extension->motor,ina_pin,inb_pin,pwm_pin,cs_pin);
+  ExtensionSystem::ExtensionSystem(int ina_pin,int inb_pin,int pwm_pin,int cs_pin){
+    motor = new Vnh5019(ina_pin,inb_pin,pwm_pin,cs_pin);
  }
   
- int extension_get_current_position(extension_state_t *extension){
-     return analogRead(extension->sensor_pin);//TODO
+ int ExtensionSystem::get_current_position(){
+     return analogRead(sensor_pin);//TODO
  }
    
    
  
  //blocking
- void extend_to(extension_state_t *extension,int point_to_move_to){
-     int current_point =extension_get_current_position(extension); 
+ void ExtensionSystem::extend_to(int point_to_move_to){
+     int current_point = get_current_position(); 
      int error =  current_point - point_to_move_to;
      while(abs(error) > EXTENSION_THRESHOLD){
-        current_point = extension_get_current_position(extension);
+        current_point = get_current_position();
         if(error > 0){
-          vnh5019_set(&extension->motor,EXTENSION_P*error,FORWARD);
+          motor->set(EXTENSION_P*error,FORWARD);
         }else{
-          vnh5019_set(&extension->motor,EXTENSION_P*error,REVERSE);
+          motor->set(EXTENSION_P*error,REVERSE);
         }
      }  
-      vnh5019_set(&extension->motor,0,REVERSE);    
+      motor->set(0,REVERSE);    
   }
+ 
 
-/*****************************************************************
- ************************* Robot functions ***********************
- ****************************************************************/
+
+ /*
  void teleopMode(){
    int mode = 0;
    int input = 0;
@@ -506,97 +601,72 @@ void gripper_unlock(gripper_state_t *gripper){
    }
    
  }
+ */
 
-bool cleaner_right_contact(cleaner_state_t* cleaner){
-   return btn_get_value(&cleaner->right_limit_switch); 
-}
-
-bool cleaner_left_contact(cleaner_state_t* cleaner){
-   return btn_get_value(&cleaner->left_limit_switch); 
-}
- 
- //blocking 
- void cleanLeft(cleaner_state_t* cleaner){
-     while(!cleaner_left_contact(cleaner)){ 
-         vnh5019_set(&cleaner->motor,CLEANER_SPEED,CLEANER_LEFT_DIR);
-       }
-         vnh5019_set(&cleaner->motor,0,CLEANER_LEFT_DIR);
-
- }
 
  
- //blocking 
- void cleanRight(cleaner_state_t* cleaner){
-     while(!cleaner_right_contact(cleaner)){ 
-          vnh5019_set(&cleaner->motor,CLEANER_SPEED,CLEANER_RIGHT_DIR);
-      }
-          //turn off the motor since we are done
-          vnh5019_set(&cleaner->motor,0,CLEANER_RIGHT_DIR);
 
- }
+ /****************************************************************
+  ************************ Robot.c *******************************
+  ***************************************************************/
+  Robot::Robot(){
+   extension_system = new ExtensionSystem(EXTENSION_MOTOR_INA_PIN,EXTENSION_MOTOR_INA_PIN,EXTENSION_MOTOR_PWM_PIN,EXTENSION_MOTOR_CS_PIN);
+   cleaner_system = new Cleaner(CLEANER_MOTOR_INA_PIN,EXTENSION_MOTOR_INB_PIN,EXTENSION_MOTOR_PWM_PIN,EXTENSION_MOTOR_CS_PIN);
+   left_gripper = new Gripper(LEFT_GRIPPER_INA_PIN,LEFT_GRIPPER_INB_PIN,LEFT_GRIPPER_PWM_PIN,LEFT_GRIPPER_CS_PIN);
+   right_gripper = new Gripper(RIGHT_GRIPPER_INA_PIN,RIGHT_GRIPPER_INB_PIN,RIGHT_GRIPPER_PWM_PIN,RIGHT_GRIPPER_CS_PIN);  
+  }
  
- 
- void cleanThisLevel(cleaner_state_t* cleaner){
-     cleanLeft(cleaner);
-     for(int pass = 0;pass < 3; pass ++){
-          cleanRight(cleaner);
-          cleanLeft(cleaner);
+ void Robot::clean_window(){
+   cleaner_system->cleanLeft();
+   /*
+    int atBottom = false;
+     while(!atBottom){
+        cleaner_system->cleanThisLevel();
+        if(current_height + MOVE_DOWN_BETWEEN_CLEANS < WINDOW_HEIGHT){
+            move_to_height(current_height+MOVE_DOWN_BETWEEN_CLEANS);
+        }else{
+            move_to_height(WINDOW_HEIGHT-ROBOT_HEIGHT);
+        }  
      }
+     cleaner_system->cleanThisLevel(); 
+     */
  }
-
-
- void moveToHeight(int newHeight){
+ 
+ void Robot::move_to_height(int newHeight){
   current_height = newHeight;  
   
   //TODO
    
    
  }
- 
- void cleanWindow(cleaner_state_t* cleaner){
-    int atBottom = false;
-     while(!atBottom){
-        cleanThisLevel(cleaner);
-        if(current_height + MOVE_DOWN_BETWEEN_CLEANS < WINDOW_HEIGHT){
-            moveToHeight(current_height+MOVE_DOWN_BETWEEN_CLEANS);
-        }else{
-            moveToHeight(WINDOW_HEIGHT-ROBOT_HEIGHT);
-        }  
-     }
-     cleanThisLevel(cleaner); 
- }
 
+//prints the robot state to the serial port
+void Robot::reportState(){
+  Serial.println(cleaner_system->get_state_string());
+   
+   //TODO 
+}
 
 /*****************************************************************
  **************************** main.c *****************************
  ****************************************************************/
-
-
+ Robot* thisRobot;
 // the setup routine runs once when you press reset:
 void setup() {
+  thisRobot = new Robot();
+//  thisRobot->clean_window();
+/*
+  state = new Vnh5019(EXTENSION_MOTOR_INA_PIN,EXTENSION_MOTOR_INB_PIN,EXTENSION_MOTOR_PWM_PIN,EXTENSION_MOTOR_CS_PIN);
+  state->set(128,REVERSE);
+//    ExtensionSystem extension_system = new ExtensionSystem(EXTENSION_MOTOR_INA_PIN,RIGHT_GRIPPER_INB_PIN,RIGHT_GRIPPER_PWM_PIN,RIGHT_GRIPPER_CS_PIN);
   // initialize serial communication at 9600 bits per second:
+  */
   Serial.begin(9600);
-  
-
-  current_height = WINDOW_HEIGHT;
-  gripper_init(&left_gripper,LEFT_GRIPPER_INA_PIN,LEFT_GRIPPER_INB_PIN,LEFT_GRIPPER_PWM_PIN,LEFT_GRIPPER_CS_PIN);
-  gripper_init(&right_gripper,RIGHT_GRIPPER_INA_PIN,RIGHT_GRIPPER_INB_PIN,RIGHT_GRIPPER_PWM_PIN,RIGHT_GRIPPER_CS_PIN);
-  vnh5019_set(&left_gripper.motor,50,FORWARD); 
-
-  gripper_lock(&left_gripper);
-   
-  
 }
-
 // the loop routine runs over and over again forever:
 void loop() {
-  /*
-  // print out the value you read:
- Serial.println(moving_average_get_average(&test_filter));
- if() > 90){
-     vnh5019_set(&left_gripper.motor,0,FORWARD); 
- }
- */
+  thisRobot->reportState();
+
  
   delay(20);        // delay in between reads for stability
 }
