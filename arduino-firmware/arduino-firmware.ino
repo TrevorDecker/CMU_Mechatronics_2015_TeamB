@@ -5,7 +5,8 @@ typedef enum vnh5019_direction {
 } vnh5019_direction_t;
 
 
-//TODO port to c++
+//TODO add safty to extension arm 
+
 /*******************************************************************
  ******************* SETTINGS.h ************************************
  ******************************************************************/
@@ -14,12 +15,17 @@ typedef enum vnh5019_direction {
 #define LEFT_GRIPPER_INB_PIN     26   //2 
 #define LEFT_GRIPPER_PWM_PIN     5    //3
 #define LEFT_GRIPPER_CS_PIN      A2   //4
+#define LEFT_GRIPPER_POT_PIN     4   //analog pin 
+#define LEFT_GRIPPER_POT_ZERO    515
 
 //right gripper speed controller
 #define RIGHT_GRIPPER_INA_PIN    23  //5       
 #define RIGHT_GRIPPER_INB_PIN    22  //6      
 #define RIGHT_GRIPPER_PWM_PIN    3  //7      
 #define RIGHT_GRIPPER_CS_PIN     A0  //8     
+#define RIGHT_GRIPPER_POT_PIN    5 //analog pin 
+#define RIGHT_GRIPPER_POT_ZERO    500
+
 
 //extsion speed controller 
 #define EXTENSION_MOTOR_INA_PIN  29  //9     
@@ -38,14 +44,14 @@ typedef enum vnh5019_direction {
 #define CLEANER_RIGHT_BTN1_PIN    42  //19      
 #define CLEANER_RIGHT_BTN2_PIN    43  //20
 
-#define LEFT_GRIPPER_POT_PIN     -1  //21      //TODO set
-#define RIGHT_GRIPPER_POT_PIN    -1  //22      //TODO set
-#define EXTESNION_SENSOR_POT_PIN -1  //23      //TODO set 
+#define EXTESNION_SENSOR_POT_PIN 7  //23      //TODO set 
+
+#define EXTENSION_MAX_SPEED      128
 
 
-#define USER_BTN_TWO_PIN         -1   //24     //TODO set
-#define USER_BTN_ONE_PIN         -1   //25     //TODO set
-#define USER_POT_PIN             -1   //26     //TODO set
+#define USER_BTN_TWO_PIN         31   //24     
+#define USER_BTN_ONE_PIN         30   //25     
+#define USER_POT_PIN             6   //26     //TODO set
 
 #define WINDOW_WIDTH             0             //TODO set
 #define WINDOW_HEIGHT            0             //TODO set
@@ -63,10 +69,11 @@ typedef enum vnh5019_direction {
 #define EXTENSION_D              0             //TODO set
 #define EXTENSION_THRESHOLD      0             //TODO set
 
-#define GRIPPER_SPEED             30          //TODO set
+#define GRIPPER_SPEED             128          //TODO set
 
 #define GRIPPER_LOCK_DIR          FORWARD      //TODO set
 #define GRIPPER_UNLOCK_DIR        REVERSE      //TODO set
+#define GRIPPER_THRESHOLD        5 
 #define MOVE_DOWN_BETWEEN_CLEANS  0            //TODO set
 #define ROBOT_HEIGHT              0            //TODO set
 #define CLEANER_SPEED             255            //TODO set
@@ -74,7 +81,7 @@ typedef enum vnh5019_direction {
 #define CLEANER_LEFT_DIR          REVERSE      //TODO set
 #define MOVEING_AVERAGE_ARRAY_SIZE 20          //TODO set
 
-#define GRIPPER_CS_GRIP_THRESHOLD 50            //TODO set 
+#define GRIPPER_CS_GRIP_THRESHOLD 200            //TODO set 
 /***************************************************************
  ******************* button.h **********************************
  **************************************************************/
@@ -119,13 +126,15 @@ class Vnh5019{
     uint8_t cs_pin;
     uint8_t speed;
     vnh5019_direction_t direction;
+    MovingAverageFilter* cs_filter;
   
   // Methods
   public:
     Vnh5019(uint8_t ina_pin,uint8_t inb_pin,uint8_t pwm_pin,uint8_t cs_pin);
     uint8_t get_speed();
     vnh5019_direction_t get_direction();
-    uint8_t get_cs_value();
+    uint8_t get_cs_value(); //must be run after get_cs_value_begin() for a sampling time
+    uint8_t get_cs_value_begin();
     int set(uint8_t speed,vnh5019_direction_t direction);
     int set_speed(uint8_t speed);
     int set_direction(vnh5019_direction_t direction);    
@@ -140,11 +149,17 @@ class Vnh5019{
  private:
     MovingAverageFilter cs_filter;
     Vnh5019* motor;
+    int sensor_pin;
  public:   
-    Gripper(int ina_pin,int inb_pin,int pwm_pin,int cs_pin);
-    void lock();
-    void unlock();
-    String getStateString();
+    Gripper(int ina_pin,int inb_pin,int pwm_pin,int cs_pin,int pot_pin);
+    void turnRight();
+    void turnLeft();
+    void turnOff();
+    void lock(vnh5019_direction_t);
+    void unlock(vnh5019_direction_t);
+    String get_state_string();
+    int get_current_rotation();
+    int turnTo(int desiredRotation);
 };
 
 
@@ -163,6 +178,7 @@ class Cleaner{
     Cleaner(int ina_pin,int inb_pin,int pwm_pin,int cs_pin);
     void cleanLeft();
     void cleanRight();
+    void turnOff();
     void cleanThisLevel();
     void cleanWindow();
     bool right_contact();
@@ -185,9 +201,13 @@ class ExtensionSystem{
   //methods 
   public:
   ExtensionSystem(int ina_pin,int inb_pin,int pwm_pin,int cs_pin);
+  void contract();
+  void expand();
+  void turnOff();
   void extend_to(int point_to_move_to);
   int  get_current_position();
-  String getStateString();
+  String get_state_string();
+  void contract_unitl_current_limit();
 };
 /***************************************************************
 ***************** Robot.h **************************************
@@ -197,7 +217,9 @@ class Robot{
    Gripper* left_gripper;
    Gripper* right_gripper;
    ExtensionSystem* extension_system;
-   Cleaner* cleaner_system; 
+   Cleaner* cleaner_system;
+   Button* usr_btn1; 
+   Button* usr_btn2;
    int current_height;
    
   public: 
@@ -205,16 +227,16 @@ class Robot{
    void move_to_height(int newHeight);
    void clean_window();
    void reportState();
-
+   void teleop();
+   void attachToWindow();
 };
 
 
 /****************************************************************
  *********** Global defintions **********************************
  ****************************************************************/
-  Button*  user_btn_one;
+   Robot* thisRobot;
 
-  
   //for concurent motor operation 
  void update(){
 //   update_btn_state(&user_btn_one);
@@ -267,6 +289,7 @@ void MovingAverageFilter::add_data_point(int newDataPoint){
   this->cs_pin  = cs_pin;
   this->speed = 0;
   this->direction = FORWARD;
+  cs_filter = new MovingAverageFilter();
    
   //sets up pins for OUTPUT 
   pinMode(ina_pin,OUTPUT);
@@ -291,8 +314,17 @@ vnh5019_direction_t Vnh5019::get_direction() {
  // @param state: controller state structure.
  // @return: current sense value.
 uint8_t Vnh5019::get_cs_value() {
-  return analogRead(cs_pin);
+  cs_filter->add_data_point(analogRead(cs_pin));
+  return cs_filter->get_average();
 }
+
+uint8_t Vnh5019::get_cs_value_begin(){
+  //add init values 
+  for(int i = 0;i<MOVEING_AVERAGE_ARRAY_SIZE;i++){
+      get_cs_value();
+  }
+}
+
 
  // Sets new outputs to the given controller. Controller state must have been
  // initialized already.
@@ -371,6 +403,7 @@ int Vnh5019::set_direction(vnh5019_direction_t direction) {
    void Button::ack(){
        was_low = false;
        was_high = false;
+       delay(200);
    } 
    
     void Button::update_state(){
@@ -402,40 +435,79 @@ int Vnh5019::set_direction(vnh5019_direction_t direction) {
 /*****************************************************************
 *********************** Gripper.c ********************************
 *****************************************************************/
-Gripper::Gripper(int ina_pin,int inb_pin,int pwm_pin,int cs_pin){
+Gripper::Gripper(int ina_pin,int inb_pin,int pwm_pin,int cs_pin,int pot_pin){
   motor = new Vnh5019(ina_pin,inb_pin,pwm_pin,cs_pin); 
+  sensor_pin = pot_pin;
+}
+
+void Gripper::turnRight(){
+ thisRobot->reportState(); //TODO temp remove
+ motor->set(GRIPPER_SPEED,FORWARD);
+}
+
+void Gripper::turnLeft(){
+  thisRobot->reportState(); //TODO temp remove
+  motor->set(GRIPPER_SPEED,REVERSE);
+}
+
+void Gripper::turnOff(){
+  motor->set(0,REVERSE);
 }
 
 //blocking
-void Gripper::lock(){
-  MovingAverageFilter cs_filter = *(new MovingAverageFilter());
-  //add init values 
-  for(int i = 0;i<MOVEING_AVERAGE_ARRAY_SIZE;i++){
-      cs_filter.add_data_point(motor->get_cs_value());
-  }
-  while(cs_filter.get_average() < GRIPPER_CS_GRIP_THRESHOLD){
-      cs_filter.add_data_point(motor->get_cs_value());
-     motor->set(GRIPPER_SPEED,GRIPPER_LOCK_DIR);
+void Gripper::lock(vnh5019_direction_t dir){
+  motor->get_cs_value_begin();
+  while(motor->get_cs_value() < GRIPPER_CS_GRIP_THRESHOLD && get_current_rotation() > 300 && get_current_rotation() < 700){
+     motor->set(GRIPPER_SPEED,dir);
      delay(20);
   }  
      motor->set(0,GRIPPER_LOCK_DIR);
 }
 
 //blocking
-void Gripper::unlock(){
-  MovingAverageFilter cs_filter = *(new MovingAverageFilter());
-  //add init values 
-  for(int i = 0;i<MOVEING_AVERAGE_ARRAY_SIZE;i++){
-      cs_filter.add_data_point(motor->get_cs_value());
-  }
-  while(cs_filter.get_average() > GRIPPER_CS_GRIP_THRESHOLD){
-    cs_filter.add_data_point(motor->get_cs_value());
-     motor->set(GRIPPER_SPEED,GRIPPER_LOCK_DIR);
+void Gripper::unlock(vnh5019_direction_t dir){
+  motor->get_cs_value_begin();
+  while(motor->get_cs_value() > GRIPPER_CS_GRIP_THRESHOLD){
+     motor->set(GRIPPER_SPEED,dir);
      delay(20);
   }  
      motor->set(0,GRIPPER_UNLOCK_DIR);
 
+
 }
+
+int Gripper::get_current_rotation(){
+  return analogRead(sensor_pin);
+}
+
+ String Gripper::get_state_string(){
+   String s1 = String(get_current_rotation());
+   String s2 = String(motor->get_cs_value());   
+   return "r("+s1+") c("+s2+")";
+ }
+ 
+ int  Gripper::turnTo(int desiredRotation){
+   if(desiredRotation >= 1024 || desiredRotation <= 0){
+    Serial.print("desiredRotation of ");
+    Serial.print(desiredRotation);
+    Serial.println(" is out of possible range");
+    return false; 
+   }
+   int error = desiredRotation - get_current_rotation();
+   while(abs(error) > GRIPPER_THRESHOLD){
+     error = desiredRotation - get_current_rotation();
+     thisRobot->reportState();
+     if(error > 0){
+       motor->set(50,REVERSE);
+     }else{
+       motor->set(50,FORWARD);
+     }
+   }
+   //turn off motors at the end
+     motor->set(0,FORWARD); 
+     return true;
+ }
+ 
 /*****************************************************************
  ********************** Cleaner.c ********************************
  ****************************************************************/
@@ -455,10 +527,15 @@ bool Cleaner::right_contact(){
 bool Cleaner::left_contact(){
    return left_limit_switch1->get_value() == true || left_limit_switch2->get_value() == true; 
 }
+
+void Cleaner::turnOff(){
+  motor->set(0,FORWARD);
+}
  
  //blocking 
  void Cleaner::cleanLeft(){
      while(!left_contact()){ 
+         thisRobot->reportState(); //TODO temp remove
          motor->set(CLEANER_SPEED,CLEANER_LEFT_DIR);
        }
          motor->set(0,CLEANER_LEFT_DIR);
@@ -468,6 +545,7 @@ bool Cleaner::left_contact(){
  //blocking 
  void Cleaner::cleanRight(){
      while(!right_contact()){ 
+         thisRobot->reportState();  //TDOO temp remvoe
           motor->set(CLEANER_SPEED,CLEANER_RIGHT_DIR);
       }
           //turn off the motor since we are done
@@ -503,7 +581,21 @@ bool Cleaner::left_contact(){
  int ExtensionSystem::get_current_position(){
      return analogRead(sensor_pin);//TODO
  }
-   
+  
+ void ExtensionSystem::contract(){
+   //todo add limit swtiches
+     motor->set(EXTENSION_MAX_SPEED,FORWARD);
+ }
+ 
+ void ExtensionSystem::expand(){
+   //TODO add limit switches
+    motor->set(EXTENSION_MAX_SPEED,REVERSE);
+
+ }
+ 
+ void ExtensionSystem::turnOff(){
+   motor->set(0,REVERSE);
+ }
    
  
  //blocking
@@ -521,11 +613,88 @@ bool Cleaner::left_contact(){
       motor->set(0,REVERSE);    
   }
  
+void ExtensionSystem::contract_unitl_current_limit(){
+  
+}
+
+String ExtensionSystem::get_state_string(){
+   return String(get_current_position()); //TODO 
+ }
+ 
 
 
- /*
- void teleopMode(){
+ 
+
+ /****************************************************************
+  ************************ Robot.c *******************************
+  ***************************************************************/
+  Robot::Robot(){
+   extension_system = new ExtensionSystem(EXTENSION_MOTOR_INA_PIN,EXTENSION_MOTOR_INB_PIN,EXTENSION_MOTOR_PWM_PIN,EXTENSION_MOTOR_CS_PIN);
+   cleaner_system = new Cleaner(CLEANER_MOTOR_INA_PIN,CLEANER_MOTOR_INB_PIN,CLEANER_MOTOR_PWM_PIN,CLEANER_MOTOR_CS_PIN);
+   left_gripper = new Gripper(LEFT_GRIPPER_INA_PIN,LEFT_GRIPPER_INB_PIN,LEFT_GRIPPER_PWM_PIN,LEFT_GRIPPER_CS_PIN,LEFT_GRIPPER_POT_PIN);
+   right_gripper = new Gripper(RIGHT_GRIPPER_INA_PIN,RIGHT_GRIPPER_INB_PIN,RIGHT_GRIPPER_PWM_PIN,RIGHT_GRIPPER_CS_PIN,RIGHT_GRIPPER_POT_PIN);
+   usr_btn1 = new Button(USER_BTN_ONE_PIN,true);
+   usr_btn2 = new Button(USER_BTN_TWO_PIN,true);  
+  }
+ 
+  void Robot::teleop(){
    int mode = 0;
+   while(1){
+    //TODO add state reporting by serial  
+    //infinite loop 
+    
+    //update mode 
+    if(usr_btn1->get_was_high() && usr_btn1->get_was_low()){
+     //button was pressed
+      mode = mode + 1 % 4;
+      usr_btn1->ack(); 
+    }
+     switch(mode){
+      case 0: 
+         //All off 
+          extension_system->turnOff();
+          cleaner_system->turnOff();
+          left_gripper->turnOff();
+          right_gripper->turnOff();
+         break; 
+      case 1:
+        //extension
+        //TODO set extension based on some user input
+        extension_system->expand(); //TODO change
+        cleaner_system->turnOff();
+        left_gripper->turnOff();
+        right_gripper->turnOff();
+         break;
+      case 2:
+         // right gripper
+         //TODO set right gripper based on some sensor
+         extension_system->turnOff();
+         cleaner_system->turnOff();
+         left_gripper->turnOff();
+         right_gripper->turnRight(); //TODO change
+         break;
+       case 3:
+          //left gripper
+          //TODO set left gripper based on some sensor
+          extension_system->turnOff();
+          cleaner_system->turnOff();
+          left_gripper->turnRight(); //TODO change
+          right_gripper->turnOff();
+          break;
+       case 4:
+          // cleaner
+          //TODO set cleaner system based on some sensor 
+          extension_system->turnOff();
+          cleaner_system->cleanLeft(); //TODO chagne 
+          left_gripper->turnOff();
+          right_gripper->turnOff();
+           break;
+       //TODO add auton 
+     }
+     
+     
+   }
+   /*
    int input = 0;
    int pot_value = 0;
    while(1){
@@ -599,25 +768,77 @@ bool Cleaner::left_contact(){
       break;
    }
    }
-   
+   */ 
  }
- */
-
-
  
-
- /****************************************************************
-  ************************ Robot.c *******************************
-  ***************************************************************/
-  Robot::Robot(){
-   extension_system = new ExtensionSystem(EXTENSION_MOTOR_INA_PIN,EXTENSION_MOTOR_INA_PIN,EXTENSION_MOTOR_PWM_PIN,EXTENSION_MOTOR_CS_PIN);
-   cleaner_system = new Cleaner(CLEANER_MOTOR_INA_PIN,EXTENSION_MOTOR_INB_PIN,EXTENSION_MOTOR_PWM_PIN,EXTENSION_MOTOR_CS_PIN);
-   left_gripper = new Gripper(LEFT_GRIPPER_INA_PIN,LEFT_GRIPPER_INB_PIN,LEFT_GRIPPER_PWM_PIN,LEFT_GRIPPER_CS_PIN);
-   right_gripper = new Gripper(RIGHT_GRIPPER_INA_PIN,RIGHT_GRIPPER_INB_PIN,RIGHT_GRIPPER_PWM_PIN,RIGHT_GRIPPER_CS_PIN);  
-  }
+ void Robot::attachToWindow(){
+   int value;
+   // make Both Grippers verticale 
+   usr_btn1->ack();
+   while(!usr_btn1->get_was_high() || !usr_btn1->get_was_low()){
+    delay(20); 
+   }
+   left_gripper->turnTo(LEFT_GRIPPER_POT_ZERO);
+   right_gripper->turnTo(RIGHT_GRIPPER_POT_ZERO);
+   // contract extension unit until current is above threashold
+   usr_btn1->ack(); 
+   Serial.println("startToAttach");
+    while(!usr_btn1->get_was_high() || !usr_btn1->get_was_low()){
+      Serial.println("in mode 1");
+     thisRobot->reportState();
+     value = analogRead(USER_POT_PIN);
+     if(value > 600){
+       extension_system->expand();
+     }else if(value < 400){
+       extension_system->contract();
+     }else{
+      extension_system->turnOff();
+     }
+   }
+   extension_system->turnOff();
+   // turn both grippers inwards (left gripper right, right gripper left)
+   usr_btn1->ack();
+   while(!usr_btn1->get_was_high() || !usr_btn1->get_was_low()){
+     Serial.println("in mode 2");
+     extension_system->contract();
+   }
+   extension_system->turnOff();
+   usr_btn1->ack();
+   delay(200);
+   left_gripper->lock(FORWARD);
+   right_gripper->lock(REVERSE);
+   /*
+   while(!usr_btn1->get_was_high() || !usr_btn1->get_was_low()){
+     Serial.println("in mode 3");
+     left_gripper->turnRight();
+   }
+   left_gripper->turnOff();
+   usr_btn1->ack();
+   while(!usr_btn1->get_was_high() || !usr_btn1->get_was_low()){
+     Serial.println("in mode 4");
+     right_gripper->turnLeft();
+   }
+     right_gripper->turnOff();
+   */
+ }
+   
  
  void Robot::clean_window(){
-   cleaner_system->cleanLeft();
+  attachToWindow();
+// extension_system->contract();
+//  left_gripper->turnTo(LEFT_GRIPPER_POT_ZERO);
+//  delay(200);
+  /*
+  while(true){
+    left_gripper->turnTo(600);
+    left_gripper->turnTo(400);
+  }
+  */
+//  left_gripper->lock(FORWARD);
+ // right_gripper->turnLeft();
+   //cleaner_system->cleanRight();
+   //cleaner_system->cleanRight();
+   //cleaner_system->cleanLeft();
    /*
     int atBottom = false;
      while(!atBottom){
@@ -642,17 +863,30 @@ bool Cleaner::left_contact(){
 
 //prints the robot state to the serial port
 void Robot::reportState(){
-  Serial.println(cleaner_system->get_state_string());
-   
+  Serial.print("C: ");
+  Serial.print(cleaner_system->get_state_string());
+  Serial.print("LG:");
+  Serial.print(left_gripper->get_state_string());
+  Serial.print("\t RG:");
+  Serial.print(right_gripper->get_state_string());
+  Serial.print("\t E:");
+  Serial.print(extension_system->get_state_string());
+  Serial.print("\t btn1:");
+  Serial.print(usr_btn1->get_value());
+  Serial.print("  btn2:");
+  Serial.print(usr_btn2->get_value());
+  Serial.print("  pot:");
+  Serial.println(analogRead(USER_POT_PIN)); //TODO 
+  Serial.println(""); 
    //TODO 
 }
 
 /*****************************************************************
  **************************** main.c *****************************
  ****************************************************************/
- Robot* thisRobot;
 // the setup routine runs once when you press reset:
 void setup() {
+  Serial.begin(9600);
   thisRobot = new Robot();
 //  thisRobot->clean_window();
 /*
@@ -661,12 +895,11 @@ void setup() {
 //    ExtensionSystem extension_system = new ExtensionSystem(EXTENSION_MOTOR_INA_PIN,RIGHT_GRIPPER_INB_PIN,RIGHT_GRIPPER_PWM_PIN,RIGHT_GRIPPER_CS_PIN);
   // initialize serial communication at 9600 bits per second:
   */
-  Serial.begin(9600);
 }
 // the loop routine runs over and over again forever:
 void loop() {
   thisRobot->reportState();
-
+  //Serial.println(String(analogRead(A4)));
  
   delay(20);        // delay in between reads for stability
 }
