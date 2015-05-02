@@ -639,16 +639,19 @@ String ExtensionSystem::get_state_string(){
  
   void Robot::teleop(){
    int mode = 0;
+   int pot_value;
    while(1){
     //TODO add state reporting by serial  
     //infinite loop 
-    
+      thisRobot->reportState();
+
     //update mode 
     if(usr_btn1->get_was_high() && usr_btn1->get_was_low()){
      //button was pressed
       mode = mode + 1 % 4;
       usr_btn1->ack(); 
     }
+    pot_value = analogRead(USER_POT_PIN);     
      switch(mode){
       case 0: 
          //All off 
@@ -660,7 +663,13 @@ String ExtensionSystem::get_state_string(){
       case 1:
         //extension
         //TODO set extension based on some user input
-        extension_system->expand(); //TODO change
+        if(pot_value > 600){
+         extension_system->expand();
+       }else if(pot_value < 400){
+         extension_system->contract();
+       }else{
+         extension_system->turnOff();
+       }
         cleaner_system->turnOff();
         left_gripper->turnOff();
         right_gripper->turnOff();
@@ -671,21 +680,40 @@ String ExtensionSystem::get_state_string(){
          extension_system->turnOff();
          cleaner_system->turnOff();
          left_gripper->turnOff();
-         right_gripper->turnRight(); //TODO change
+          if(pot_value > 600){
+                    right_gripper->turnRight(); 
+         }else if(pot_value < 400){
+           right_gripper->turnLeft();
+         }else{
+           right_gripper->turnOff();
+         }
          break;
        case 3:
           //left gripper
           //TODO set left gripper based on some sensor
           extension_system->turnOff();
           cleaner_system->turnOff();
-          left_gripper->turnRight(); //TODO change
+          if(pot_value > 600){
+                    left_gripper->turnRight(); 
+         }else if(pot_value < 400){
+           left_gripper->turnLeft();
+         }else{
+           left_gripper->turnOff();
+         }
+
           right_gripper->turnOff();
           break;
        case 4:
           // cleaner
           //TODO set cleaner system based on some sensor 
           extension_system->turnOff();
-          cleaner_system->cleanLeft(); //TODO chagne 
+           if(pot_value > 600){
+                    cleaner_system->cleanLeft(); 
+         }else if(pot_value < 400){
+           cleaner_system->cleanRight();
+         }else{
+           cleaner_system->turnOff();
+         }
           left_gripper->turnOff();
           right_gripper->turnOff();
            break;
@@ -694,81 +722,6 @@ String ExtensionSystem::get_state_string(){
      
      
    }
-   /*
-   int input = 0;
-   int pot_value = 0;
-   while(1){
-   //TODO add sensor reporting by serial 
- 
-   if(input % 2 == 0){
-    if(btn_get_was_high(&user_btn_one)){
-        input++;
-        btn_ack(&user_btn_one);
-    }
-   }else{
-     if(btn_get_was_low(&user_btn_one)){
-       input++;
-       btn_ack(&user_btn_one);
-     }
-   }
- 
-   mode = input/2 % 4;
-   
-   switch(mode){
-    case  0:  //off
-      vnh5019_set(&extension_system.motor,0,REVERSE);
-      vnh5019_set(&cleaner_system.motor,0,REVERSE);
-      vnh5019_set(&left_gripper.motor,0,REVERSE);
-      vnh5019_set(&right_gripper.motor,0,REVERSE);
-      break;  
-    case 1: // extension
-      pot_value = analogRead(USER_POT_PIN);
-      if(pot_value < 128){
-              vnh5019_set(&extension_system.motor,pot_value,REVERSE);
-      }else{
-              vnh5019_set(&extension_system.motor,pot_value - 128,FORWARD);
-      }
-      vnh5019_set(&cleaner_system.motor,0,REVERSE);
-      vnh5019_set(&left_gripper.motor,0,REVERSE);
-      vnh5019_set(&right_gripper.motor,0,REVERSE);
-      break;  
-     case 2: //cleaner
-     vnh5019_set(&extension_system.motor,0,REVERSE);
-
-           pot_value = analogRead(USER_POT_PIN);
-      if(pot_value < 128){
-              vnh5019_set(&cleaner_system.motor,pot_value,REVERSE);
-      }else{
-              vnh5019_set(&cleaner_system.motor,pot_value - 128,FORWARD);
-      }
-      vnh5019_set(&left_gripper.motor,0,REVERSE);
-      vnh5019_set(&right_gripper.motor,0,REVERSE);
-      break; 
-     case 3: //gripper1
-       vnh5019_set(&extension_system.motor,0,REVERSE);
-       vnh5019_set(&cleaner_system.motor,0,REVERSE);
-       pot_value = analogRead(USER_POT_PIN);
-      if(pot_value < 128){
-              vnh5019_set(&left_gripper.motor,pot_value,REVERSE);
-      }else{
-              vnh5019_set(&left_gripper.motor,pot_value - 128,FORWARD);
-      }
-      vnh5019_set(&right_gripper.motor,0,REVERSE);
-      break; 
-     case 4: //gripper2
-       vnh5019_set(&extension_system.motor,0,REVERSE);
-       vnh5019_set(&cleaner_system.motor,0,REVERSE);
-       vnh5019_set(&left_gripper.motor,0,REVERSE);
-       pot_value = analogRead(USER_POT_PIN);
-      if(pot_value < 128){
-              vnh5019_set(&right_gripper.motor,pot_value,REVERSE);
-      }else{
-              vnh5019_set(&right_gripper.motor,pot_value - 128,FORWARD);
-      }
-      break;
-   }
-   }
-   */ 
  }
  
  void Robot::attachToWindow(){
@@ -888,6 +841,7 @@ void Robot::reportState(){
 void setup() {
   Serial.begin(9600);
   thisRobot = new Robot();
+  thisRobot->teleop();
 //  thisRobot->clean_window();
 /*
   state = new Vnh5019(EXTENSION_MOTOR_INA_PIN,EXTENSION_MOTOR_INB_PIN,EXTENSION_MOTOR_PWM_PIN,EXTENSION_MOTOR_CS_PIN);
