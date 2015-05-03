@@ -6,11 +6,17 @@ typedef enum vnh5019_direction {
 
 
 //TODO add safty to extension arm 
+//TODO add pid controllers
+//TODO clean up code 
 
 /*******************************************************************
  ******************* SETTINGS.h ************************************
  ******************************************************************/
-//left gripper speed controller 
+ #define DL_PER_STEP 10
+ #define DR_PER_STEP 10
+ #define DE_PER_STEP 0.25
+ 
+ //left gripper speed controller 
 #define LEFT_GRIPPER_INA_PIN     27   //1 
 #define LEFT_GRIPPER_INB_PIN     26   //2 
 #define LEFT_GRIPPER_PWM_PIN     5    //3
@@ -56,18 +62,18 @@ typedef enum vnh5019_direction {
 #define WINDOW_WIDTH             0             //TODO set
 #define WINDOW_HEIGHT            0             //TODO set
 
-#define LEFT_GRIPPER_P           0             //TODO set
+#define LEFT_GRIPPER_P           1             //TODO set
 #define LEFT_GRIPPER_I           0             //TODO set
 #define LEFT_GRIPPER_D           0             //TODO set
 
-#define RIGHT_GRIPPER_P          0             //TODO set
+#define RIGHT_GRIPPER_P          1             //TODO set
 #define RIGHT_GRIPPER_I          0             //TODO set
 #define RIGHT_GRIPPER_D          0             //TODO set
 
-#define EXTENSION_P              0             //TODO set
+#define EXTENSION_P              1             //TODO set
 #define EXTENSION_I              0             //TODO set
 #define EXTENSION_D              0             //TODO set
-#define EXTENSION_THRESHOLD      0             //TODO set
+#define EXTENSION_THRESHOLD      .5             //TODO set
 
 #define GRIPPER_SPEED             128          //TODO set
 
@@ -148,9 +154,9 @@ class Vnh5019{
 {
  private:
     MovingAverageFilter cs_filter;
-    Vnh5019* motor;
     int sensor_pin;
- public:   
+ public: 
+    Vnh5019* motor;
     Gripper(int ina_pin,int inb_pin,int pwm_pin,int cs_pin,int pot_pin);
     void turnRight();
     void turnLeft();
@@ -195,17 +201,17 @@ class Cleaner{
 class ExtensionSystem{
   //member variables
   private:
-  Vnh5019* motor;
   uint8_t sensor_pin;
   
   //methods 
   public:
+  Vnh5019* motor; 
   ExtensionSystem(int ina_pin,int inb_pin,int pwm_pin,int cs_pin);
   void contract();
   void expand();
   void turnOff();
-  void extend_to(int point_to_move_to);
-  int  get_current_position();
+  void extend_to(float point_to_move_to);
+  float  get_current_position();
   String get_state_string();
   void contract_unitl_current_limit();
 };
@@ -224,11 +230,13 @@ class Robot{
    
   public: 
    Robot();
+   void goTo(int leftGripper,int rightGripper,float extension);
    void move_to_height(int newHeight);
    void clean_window();
    void reportState();
    void teleop();
    void attachToWindow();
+   void stepDown();
 };
 
 
@@ -576,10 +584,12 @@ void Cleaner::turnOff(){
  *****************************************************************/
   ExtensionSystem::ExtensionSystem(int ina_pin,int inb_pin,int pwm_pin,int cs_pin){
     motor = new Vnh5019(ina_pin,inb_pin,pwm_pin,cs_pin);
+    sensor_pin = EXTESNION_SENSOR_POT_PIN;
  }
   
- int ExtensionSystem::get_current_position(){
-     return analogRead(sensor_pin);//TODO
+ float ExtensionSystem::get_current_position(){
+   return -0.031*((float)analogRead(sensor_pin))+61.269;
+    // return -0.0309375*analogRead(sensor_pin)+62.0438;
  }
   
  void ExtensionSystem::contract(){
@@ -599,20 +609,26 @@ void Cleaner::turnOff(){
    
  
  //blocking
- void ExtensionSystem::extend_to(int point_to_move_to){
+ void ExtensionSystem::extend_to(float point_to_move_to){
      int current_point = get_current_position(); 
-     int error =  current_point - point_to_move_to;
+     float error;
+     Serial.println("starting extension");
      while(abs(error) > EXTENSION_THRESHOLD){
-        current_point = get_current_position();
+       current_point = get_current_position();
+       error =  current_point - point_to_move_to;
+        Serial.println(error);
+          thisRobot->reportState();
         if(error > 0){
-          motor->set(EXTENSION_P*error,FORWARD);
+          motor->set(EXTENSION_P*abs(error)+60,FORWARD);
         }else{
-          motor->set(EXTENSION_P*error,REVERSE);
+          motor->set(EXTENSION_P*abs(error)+60,REVERSE);
         }
-     }  
+     }
+      Serial.println("done");  
       motor->set(0,REVERSE);    
   }
  
+ //TODO 
 void ExtensionSystem::contract_unitl_current_limit(){
   
 }
@@ -634,8 +650,13 @@ String ExtensionSystem::get_state_string(){
    left_gripper = new Gripper(LEFT_GRIPPER_INA_PIN,LEFT_GRIPPER_INB_PIN,LEFT_GRIPPER_PWM_PIN,LEFT_GRIPPER_CS_PIN,LEFT_GRIPPER_POT_PIN);
    right_gripper = new Gripper(RIGHT_GRIPPER_INA_PIN,RIGHT_GRIPPER_INB_PIN,RIGHT_GRIPPER_PWM_PIN,RIGHT_GRIPPER_CS_PIN,RIGHT_GRIPPER_POT_PIN);
    usr_btn1 = new Button(USER_BTN_ONE_PIN,true);
-   usr_btn2 = new Button(USER_BTN_TWO_PIN,true);  
+   usr_btn2 = new Button(USER_BTN_TWO_PIN,true);
+   int desired_left_gripper = left_gripper->get_current_rotation();    //TODO implment 
+   int desired_right_gripper = right_gripper->get_current_rotation();  //TODO implment 
+   float desired_extension = extension_system->get_current_position(); //TODO implment
   }
+  
+  
  
   void Robot::teleop(){
    int mode = 0;
@@ -648,12 +669,13 @@ String ExtensionSystem::get_state_string(){
     //update mode 
     if(usr_btn1->get_was_high() && usr_btn1->get_was_low()){
      //button was pressed
-      mode = mode + 1 % 4;
+      mode = (mode + 1) % 5;
       usr_btn1->ack(); 
     }
     pot_value = analogRead(USER_POT_PIN);     
      switch(mode){
       case 0: 
+          Serial.println("mode 0");
          //All off 
           extension_system->turnOff();
           cleaner_system->turnOff();
@@ -661,51 +683,55 @@ String ExtensionSystem::get_state_string(){
           right_gripper->turnOff();
          break; 
       case 1:
+        Serial.println("mode 1");
         //extension
-        //TODO set extension based on some user input
-        if(pot_value > 600){
-         extension_system->expand();
-       }else if(pot_value < 400){
-         extension_system->contract();
-       }else{
-         extension_system->turnOff();
-       }
-        cleaner_system->turnOff();
-        left_gripper->turnOff();
-        right_gripper->turnOff();
+        if(usr_btn2->get_value()){
+          goTo(left_gripper->get_current_rotation(),right_gripper->get_current_rotation(),0.0244140625*((float)pot_value)+36.25);  //TODO set offset for pot_value
+          cleaner_system->turnOff();
+        }else{
+          extension_system->turnOff();
+          cleaner_system->turnOff();
+          left_gripper->turnOff();
+          right_gripper->turnOff();
+        }
+        
          break;
       case 2:
+         Serial.println("mode 2");
          // right gripper
-         //TODO set right gripper based on some sensor
-         extension_system->turnOff();
-         cleaner_system->turnOff();
-         left_gripper->turnOff();
-          if(pot_value > 600){
-                    right_gripper->turnRight(); 
-         }else if(pot_value < 400){
-           right_gripper->turnLeft();
+         if(usr_btn2->get_value()){
+
+           cleaner_system->turnOff();
+           goTo(left_gripper->get_current_rotation(),pot_value,extension_system->get_current_position());  //TODO set offset for pot_value
          }else{
-           right_gripper->turnOff();
+           extension_system->turnOff();
+          cleaner_system->turnOff();
+          left_gripper->turnOff();
+          right_gripper->turnOff(); 
+           
          }
          break;
        case 3:
+          Serial.println("mode 3");
           //left gripper
           //TODO set left gripper based on some sensor
-          extension_system->turnOff();
+          if(usr_btn2->get_value()){
+            cleaner_system->turnOff();
+            goTo(pot_value,right_gripper->get_current_rotation(),extension_system->get_current_position());  //TODO set offset for pot_value
+          }else{
+           extension_system->turnOff();
           cleaner_system->turnOff();
-          if(pot_value > 600){
-                    left_gripper->turnRight(); 
-         }else if(pot_value < 400){
-           left_gripper->turnLeft();
-         }else{
-           left_gripper->turnOff();
-         }
-
-          right_gripper->turnOff();
+          left_gripper->turnOff();
+          right_gripper->turnOff();  
+         }            
           break;
        case 4:
+          Serial.println("mode 4");
           // cleaner
           //TODO set cleaner system based on some sensor 
+           if(usr_btn2->get_value()){
+
+          
           extension_system->turnOff();
            if(pot_value > 600){
                     cleaner_system->cleanLeft(); 
@@ -716,6 +742,13 @@ String ExtensionSystem::get_state_string(){
          }
           left_gripper->turnOff();
           right_gripper->turnOff();
+           }else{
+            extension_system->turnOff();
+          cleaner_system->turnOff();
+          left_gripper->turnOff();
+          right_gripper->turnOff();             
+             
+           }
            break;
        //TODO add auton 
      }
@@ -760,24 +793,35 @@ String ExtensionSystem::get_state_string(){
    delay(200);
    left_gripper->lock(FORWARD);
    right_gripper->lock(REVERSE);
-   /*
-   while(!usr_btn1->get_was_high() || !usr_btn1->get_was_low()){
-     Serial.println("in mode 3");
-     left_gripper->turnRight();
-   }
-   left_gripper->turnOff();
-   usr_btn1->ack();
-   while(!usr_btn1->get_was_high() || !usr_btn1->get_was_low()){
-     Serial.println("in mode 4");
-     right_gripper->turnLeft();
-   }
-     right_gripper->turnOff();
-   */
  }
    
  
  void Robot::clean_window(){
-  attachToWindow();
+ // attachToWindow();
+ //while(true){
+ //    thisRobot->reportState();
+ //    thisRobot->stepDown();
+     
+/*      if(usr_btn1->get_value()){
+     extension_system->extend_to(55);
+      }
+      */
+
+
+ while(true){
+     thisRobot->reportState();
+   if(usr_btn1->get_value()){
+    if(usr_btn2->get_value()){
+       extension_system->expand();
+    }else{
+      extension_system->contract();
+    }
+   }else{
+      extension_system->turnOff(); 
+   }
+ }
+ 
+   
 // extension_system->contract();
 //  left_gripper->turnTo(LEFT_GRIPPER_POT_ZERO);
 //  delay(200);
@@ -806,6 +850,57 @@ String ExtensionSystem::get_state_string(){
      */
  }
  
+ //TODO fix that this function copys code 
+ void Robot::goTo(int left_goal,int right_goal,float extension_goal){
+   int error_left = left_goal - left_gripper->get_current_rotation();
+   int error_right  = right_goal - right_gripper->get_current_rotation();
+   float error_e = extension_goal - extension_system->get_current_position();
+     
+     if(abs(error_left) > GRIPPER_THRESHOLD){
+        //update the left gripper 
+        if(error_left > 0){
+           left_gripper->motor->set(LEFT_GRIPPER_P*abs(error_left),REVERSE);
+        }else{
+           left_gripper->motor->set(LEFT_GRIPPER_P*abs(error_left),FORWARD);
+        }
+     }else{
+       left_gripper->turnOff();
+     }
+     
+     
+      if(abs(error_right) > GRIPPER_THRESHOLD){
+        //update the right gripper
+        if(error_right > 0){
+           right_gripper->motor->set(RIGHT_GRIPPER_P*abs(error_right),REVERSE);
+        }else{
+           right_gripper->motor->set(RIGHT_GRIPPER_P*abs(error_right),FORWARD);
+        }
+      }else{
+        right_gripper->turnOff();
+      }
+      
+      
+      if(abs(error_e) > EXTENSION_THRESHOLD){
+       //update the extension amount
+        if(error_e > 0){
+          extension_system->motor->set(EXTENSION_P*abs(error_e)+60,REVERSE);
+        }else{
+          extension_system->motor->set(EXTENSION_P*abs(error_e)+60,FORWARD);
+         }
+      }else{
+       extension_system->turnOff(); 
+      }
+ }
+ 
+ void Robot::stepDown(){
+  //TODO
+ goTo(left_gripper->get_current_rotation() + DL_PER_STEP,right_gripper->get_current_rotation()+DR_PER_STEP,extension_system->get_current_position()+DE_PER_STEP); 
+  //turn left gripper a little bit
+  //extend a little bit
+  //turn right gripper a little bit 
+  
+ }
+ 
  void Robot::move_to_height(int newHeight){
   current_height = newHeight;  
   
@@ -831,7 +926,6 @@ void Robot::reportState(){
   Serial.print("  pot:");
   Serial.println(analogRead(USER_POT_PIN)); //TODO 
   Serial.println(""); 
-   //TODO 
 }
 
 /*****************************************************************
@@ -842,7 +936,7 @@ void setup() {
   Serial.begin(9600);
   thisRobot = new Robot();
   thisRobot->teleop();
-//  thisRobot->clean_window();
+ //thisRobot->clean_window();
 /*
   state = new Vnh5019(EXTENSION_MOTOR_INA_PIN,EXTENSION_MOTOR_INB_PIN,EXTENSION_MOTOR_PWM_PIN,EXTENSION_MOTOR_CS_PIN);
   state->set(128,REVERSE);
