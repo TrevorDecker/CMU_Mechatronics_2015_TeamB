@@ -70,7 +70,7 @@ typedef enum vnh5019_direction {
 #define RIGHT_GRIPPER_I          0             //TODO set
 #define RIGHT_GRIPPER_D          0             //TODO set
 
-#define EXTENSION_P              1             //TODO set
+#define EXTENSION_P              2             //TODO set
 #define EXTENSION_I              0             //TODO set
 #define EXTENSION_D              0             //TODO set
 #define EXTENSION_THRESHOLD      .5             //TODO set
@@ -661,6 +661,9 @@ String ExtensionSystem::get_state_string(){
   void Robot::teleop(){
    int mode = 0;
    int pot_value;
+   int LG = left_gripper->get_current_rotation();
+   int RG = right_gripper->get_current_rotation();
+   float E = extension_system->get_current_position();
    while(1){
     //TODO add state reporting by serial  
     //infinite loop 
@@ -686,7 +689,8 @@ String ExtensionSystem::get_state_string(){
         Serial.println("mode 1");
         //extension
         if(usr_btn2->get_value()){
-          goTo(left_gripper->get_current_rotation(),right_gripper->get_current_rotation(),0.0244140625*((float)pot_value)+36.25);  //TODO set offset for pot_value
+          E = 0.0244140625*((float)pot_value)+36.75;
+          goTo(LG,RG,E);  //TODO set offset for pot_value
           cleaner_system->turnOff();
         }else{
           extension_system->turnOff();
@@ -702,7 +706,8 @@ String ExtensionSystem::get_state_string(){
          if(usr_btn2->get_value()){
 
            cleaner_system->turnOff();
-           goTo(left_gripper->get_current_rotation(),pot_value,extension_system->get_current_position());  //TODO set offset for pot_value
+           RG = pot_value;
+           goTo(LG,RG,E);  //TODO set offset for pot_value
          }else{
            extension_system->turnOff();
           cleaner_system->turnOff();
@@ -717,7 +722,8 @@ String ExtensionSystem::get_state_string(){
           //TODO set left gripper based on some sensor
           if(usr_btn2->get_value()){
             cleaner_system->turnOff();
-            goTo(pot_value,right_gripper->get_current_rotation(),extension_system->get_current_position());  //TODO set offset for pot_value
+            LG = pot_value;
+            goTo(LG,RG,E);  //TODO set offset for pot_value
           }else{
            extension_system->turnOff();
           cleaner_system->turnOff();
@@ -797,7 +803,7 @@ String ExtensionSystem::get_state_string(){
    
  
  void Robot::clean_window(){
- // attachToWindow();
+ //attachToWindow();
  //while(true){
  //    thisRobot->reportState();
  //    thisRobot->stepDown();
@@ -807,7 +813,7 @@ String ExtensionSystem::get_state_string(){
       }
       */
 
-
+/*
  while(true){
      thisRobot->reportState();
    if(usr_btn1->get_value()){
@@ -820,6 +826,7 @@ String ExtensionSystem::get_state_string(){
       extension_system->turnOff(); 
    }
  }
+ */
  
    
 // extension_system->contract();
@@ -935,7 +942,7 @@ void Robot::reportState(){
 void setup() {
   Serial.begin(9600);
   thisRobot = new Robot();
-  thisRobot->teleop();
+ thisRobot->teleop();
  //thisRobot->clean_window();
 /*
   state = new Vnh5019(EXTENSION_MOTOR_INA_PIN,EXTENSION_MOTOR_INB_PIN,EXTENSION_MOTOR_PWM_PIN,EXTENSION_MOTOR_CS_PIN);
