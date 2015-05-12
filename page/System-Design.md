@@ -19,7 +19,7 @@ Many design improvements have been made since the start of the project. Firstly,
 
 ##Locomotion
 
-<img width="150px" hegiht="150px" src={{site.baseurl}}/images/arm_cad.png">
+<img width="150px" height="150px" src={{site.baseurl}}/images/arm_cad.png">
 
 Originally, we considered many methods of locomotion for the whole robot. We considered using suction to  attach ourselves to the window. This would have allow us to move freely to any part of the window. The base of the Winbot 730 by Ecovacs [2] has an inner ring that is connected to a vacuum pump which holds the robot to the window. One of the disadvantages of the this method include streaking caused by the suction mechanism and loss of suction due to dirtying of the surface. Also, the area under the suction mechanism will be left uncleaned in the end. Therefore, we decided to explore other attachment options. We briefly discussed using magnets to secure the robot and clean both sides of the window. However, since having a magnetic attachment on the inside would be unrealistic in the cleaning of skyscrapers, we decided to pursue other avenues. The possibility of using a quadrotor or another type of flying mechanism as a means of locomotion was considered.  This would allow for the robot to be very versatile and mobile, but in the end, issues with weight, controls, precision, and varying expected air conditions (outside of a skyscraper) also rendered this idea unfeasible. 
 
