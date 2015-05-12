@@ -15,6 +15,7 @@ The majority of our engineering work can be found in our mechanical and software
 * [Design Proposal]({{site.baseurl}}/docs/TeamB_DesignProposal.pdf)
 * [Mid-Semester Presentation](https://docs.google.com/presentation/d/1lWlY1oNO3qcYeGmug9A7smSj7dXbPisj6l8bZFO_b-I/edit?usp=sharing)
 * [Final Report]({{site.baseurl}}/docs/TeamB_FinalReport.pdf)
+=======
 ## Individual Lab Reports (ILRs)
 
 * [Steph ILR 1]({{site.baseurl}}/docs/TeamB_swc1_ILR01.pdf)

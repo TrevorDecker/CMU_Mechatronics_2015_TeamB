@@ -13,4 +13,5 @@ Every year, window cleaners suffer injuries from slipping on soap or water and f
 
 MonkeyBot - A window washer for scaling the urban jungle.
 
+Only have a minute? Find all the details in our [Final Report]({{site.baseurl}}/docs/TeamB_FinalReport.pdf)!
 
