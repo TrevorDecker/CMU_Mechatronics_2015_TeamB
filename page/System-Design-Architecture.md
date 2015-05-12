@@ -7,7 +7,7 @@ layout: default
 
 The functional diagram illustrates on a high level how data is gathered and passed through the system. As the robot cycles between states of moving and cleaning, the sensors provide feedback. This information, once relayed to the controller can dictate the motion of the mechanisms. 
 
-[![]({{site.baseurl}}/images/design_cyberphysical_architecture.png)]({{site.baseurl}}/images/design_cyberphysical_architecture.png)
+[![]({{site.baseurl}}/images/design_functional_architecture.png)]({{site.baseurl}}/images/design_functional_architecture.png)
 
 # Cyberphysical Architecture #
 
