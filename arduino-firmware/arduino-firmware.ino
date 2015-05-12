@@ -12,9 +12,9 @@ typedef enum vnh5019_direction {
 /*******************************************************************
  ******************* SETTINGS.h ************************************
  ******************************************************************/
- #define DL_PER_STEP 10
- #define DR_PER_STEP 10
- #define DE_PER_STEP 0.25
+ #define DL_PER_STEP -3
+ #define DR_PER_STEP -2
+ #define DE_PER_STEP .25
  
  //left gripper speed controller 
 #define LEFT_GRIPPER_INA_PIN     27   //1 
@@ -22,7 +22,7 @@ typedef enum vnh5019_direction {
 #define LEFT_GRIPPER_PWM_PIN     5    //3
 #define LEFT_GRIPPER_CS_PIN      A2   //4
 #define LEFT_GRIPPER_POT_PIN     4   //analog pin 
-#define LEFT_GRIPPER_POT_ZERO    515
+#define LEFT_GRIPPER_POT_ZERO    525  
 
 //right gripper speed controller
 #define RIGHT_GRIPPER_INA_PIN    23  //5       
@@ -52,7 +52,7 @@ typedef enum vnh5019_direction {
 
 #define EXTESNION_SENSOR_POT_PIN 7  //23      //TODO set 
 
-#define EXTENSION_MAX_SPEED      128
+#define EXTENSION_MAX_SPEED      255
 
 
 #define USER_BTN_TWO_PIN         31   //24     
@@ -73,9 +73,9 @@ typedef enum vnh5019_direction {
 #define EXTENSION_P              2             //TODO set
 #define EXTENSION_I              0             //TODO set
 #define EXTENSION_D              0             //TODO set
-#define EXTENSION_THRESHOLD      .5             //TODO set
+#define EXTENSION_THRESHOLD      .1             //TODO set
 
-#define GRIPPER_SPEED             128          //TODO set
+#define GRIPPER_SPEED             255          //TODO set
 
 #define GRIPPER_LOCK_DIR          FORWARD      //TODO set
 #define GRIPPER_UNLOCK_DIR        REVERSE      //TODO set
@@ -223,12 +223,17 @@ class Robot{
    Gripper* left_gripper;
    Gripper* right_gripper;
    ExtensionSystem* extension_system;
-   Cleaner* cleaner_system;
    Button* usr_btn1; 
    Button* usr_btn2;
    int current_height;
    
+     int error_left;
+   int error_right;
+   float error_e;
+   
   public: 
+     Cleaner* cleaner_system;
+
    Robot();
    void goTo(int leftGripper,int rightGripper,float extension);
    void move_to_height(int newHeight);
@@ -611,7 +616,7 @@ void Cleaner::turnOff(){
  //blocking
  void ExtensionSystem::extend_to(float point_to_move_to){
      int current_point = get_current_position(); 
-     float error;
+     float error =  current_point - point_to_move_to;
      Serial.println("starting extension");
      while(abs(error) > EXTENSION_THRESHOLD){
        current_point = get_current_position();
@@ -619,9 +624,13 @@ void Cleaner::turnOff(){
         Serial.println(error);
           thisRobot->reportState();
         if(error > 0){
-          motor->set(EXTENSION_P*abs(error)+60,FORWARD);
+               //     motor->set(255,FORWARD);
+
+          motor->set(EXTENSION_P*abs(error)+50,FORWARD);
         }else{
-          motor->set(EXTENSION_P*abs(error)+60,REVERSE);
+//                    motor->set(255,REVERSE);
+
+          motor->set(EXTENSION_P*abs(error)+50,REVERSE);
         }
      }
       Serial.println("done");  
@@ -787,33 +796,76 @@ String ExtensionSystem::get_state_string(){
       extension_system->turnOff();
      }
    }
+   // decided to not use so that walking is easier 
+   //contract to get a better grip 
    extension_system->turnOff();
-   // turn both grippers inwards (left gripper right, right gripper left)
    usr_btn1->ack();
+
    while(!usr_btn1->get_was_high() || !usr_btn1->get_was_low()){
      Serial.println("in mode 2");
      extension_system->contract();
    }
+   // turn both grippers inwards (left gripper right, right gripper left)
    extension_system->turnOff();
    usr_btn1->ack();
    delay(200);
-   left_gripper->lock(FORWARD);
    right_gripper->lock(REVERSE);
+
+   left_gripper->lock(FORWARD);
  }
    
  
  void Robot::clean_window(){
- //attachToWindow();
+   usr_btn1->ack();
+   
+   while(!usr_btn1->get_was_high() || !usr_btn1->get_was_low()){
+    delay(20); 
+   }
+     attachToWindow();
+
+   cleaner_system->turnOff();
+  
+   while(true){
+   usr_btn1->ack();
+   while(!usr_btn1->get_was_high() || !usr_btn1->get_was_low()){
+    delay(20); 
+   }
+   while(true){
+   cleaner_system->cleanRight();
+   cleaner_system->cleanLeft();
+   }
+   }
+   
+ /*
+ while(true){
+ usr_btn1->ack();
+ //wait for a button press
+ while(!usr_btn1->get_was_high() || !usr_btn1->get_was_low()){
+  delay(20); 
+ }
+ //try to take a step 
+ //stepDown();
+  delay(200);
+  //right_gripper->lock(FORWARD);
+  delay(200);
+  */
+//  left_gripper->lock(REVERSE);
+// right_gripper->turnTo(right_gripper->get_current_rotation()+DR_PER_STEP);
+// left_gripper->turnTo(left_gripper->get_current_rotation()+DL_PER_STEP);
+//extension_system->extend_to(extension_system->get_current_position()+DE_PER_STEP);
+// right_gripper->turnTo(right_gripper->get_current_rotation()+DR_PER_STEP);
+ /*while(true){
+  right_gripper->turnRight(); 
+ }
+ 
+
  //while(true){
  //    thisRobot->reportState();
  //    thisRobot->stepDown();
-     
-/*      if(usr_btn1->get_value()){
+           if(usr_btn1->get_value()){
      extension_system->extend_to(55);
       }
-      */
-
-/*
+     
  while(true){
      thisRobot->reportState();
    if(usr_btn1->get_value()){
@@ -825,8 +877,8 @@ String ExtensionSystem::get_state_string(){
    }else{
       extension_system->turnOff(); 
    }
- }
- */
+*/
+
  
    
 // extension_system->contract();
@@ -842,7 +894,7 @@ String ExtensionSystem::get_state_string(){
  // right_gripper->turnLeft();
    //cleaner_system->cleanRight();
    //cleaner_system->cleanRight();
-   //cleaner_system->cleanLeft();
+   //cleaner_system->cleanRight();
    /*
     int atBottom = false;
      while(!atBottom){
@@ -857,11 +909,14 @@ String ExtensionSystem::get_state_string(){
      */
  }
  
+
+  
+ 
  //TODO fix that this function copys code 
  void Robot::goTo(int left_goal,int right_goal,float extension_goal){
-   int error_left = left_goal - left_gripper->get_current_rotation();
-   int error_right  = right_goal - right_gripper->get_current_rotation();
-   float error_e = extension_goal - extension_system->get_current_position();
+    error_left = left_goal - left_gripper->get_current_rotation();
+    error_right = right_goal - right_gripper->get_current_rotation();
+    error_e = extension_goal - extension_system->get_current_position();
      
      if(abs(error_left) > GRIPPER_THRESHOLD){
         //update the left gripper 
@@ -901,7 +956,12 @@ String ExtensionSystem::get_state_string(){
  
  void Robot::stepDown(){
   //TODO
- goTo(left_gripper->get_current_rotation() + DL_PER_STEP,right_gripper->get_current_rotation()+DR_PER_STEP,extension_system->get_current_position()+DE_PER_STEP); 
+  int left_goal = left_gripper->get_current_rotation();// + DL_PER_STEP; 
+  int right_goal = right_gripper->get_current_rotation()+DR_PER_STEP;
+  float e_goal = extension_system->get_current_position();//+DE_PER_STEP;
+  while(true){
+     goTo(left_goal,right_goal,e_goal); 
+  }
   //turn left gripper a little bit
   //extend a little bit
   //turn right gripper a little bit 
@@ -942,8 +1002,11 @@ void Robot::reportState(){
 void setup() {
   Serial.begin(9600);
   thisRobot = new Robot();
- thisRobot->teleop();
- //thisRobot->clean_window();
+ //thisRobot->teleop();
+thisRobot->clean_window();
+//thisRobot->cleaner_system->cleanLeft();
+//thisRobot->cleaner_system->cleanRight();
+
 /*
   state = new Vnh5019(EXTENSION_MOTOR_INA_PIN,EXTENSION_MOTOR_INB_PIN,EXTENSION_MOTOR_PWM_PIN,EXTENSION_MOTOR_CS_PIN);
   state->set(128,REVERSE);
