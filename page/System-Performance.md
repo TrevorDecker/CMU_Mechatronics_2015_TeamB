@@ -15,6 +15,10 @@ A quick test was run to figure out how much weight our current gripper prototype
 [![]({{site.baseurl}}/images/griptest2.JPG)]({{site.baseurl}}/images/griptest2.JPG)
 [![]({{site.baseurl}}/images/griptest3.JPG)]({{site.baseurl}}/images/griptest3.JPG)
 
+The final iteration, however, consisted of two large pieces of aluminum c-channel with rubber padding.  The c-channel fits over the frame of the window, and when the full weight of the robot is applied to the gripper, the large resulting moment creates a friction lock as the top and bottom of the c-channel bind against the window frame.  The rubber padding increases the coefficient of friction to prevent slipping.  One large advantage to this mechanism is that the weight of the robot actually helps the grippers stick to the window frame by applying more normal force and thus creating more friction.
+
+[![]({{site.baseurl}}/images/griptest4.png)]({{site.baseurl}}/images/griptest4.png)
+
 ### Extending Arm
 The extension arm has been built and has been tested. The lead screw is able to power the extending arm quickly as long as there is enough current from the power supply. Due to the length of the lead screw, we are concerned about the binding of the lead screw. There are also some concerns regarding the weight of the arm but due to the transfer gearbox but we will attempt to cut down on the weight in a way that would not compromise function.
 
