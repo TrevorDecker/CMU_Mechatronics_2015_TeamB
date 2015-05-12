@@ -32,9 +32,20 @@ The pivoting motion is dictated by a gearbox with a worm gear. It has been assem
 
 <iframe width="420" height="315" src="https://www.youtube.com/embed/JQYD1DYoebc" frameborder="0" allowfullscreen></iframe>
 
-## Software Bring-up
+Replacing the spacers with harder metal ones was sucessful. The Pivots are functional as designed.
+
+## Control System
 
 We currently have [working firmware](https://github.com/TrevorDecker/CMU_Mechatronics_2015_TeamB/tree/master/stm32f4-firmware) that controls the screen on our development board. To use this, we had to bring up the SPI and GPIO interfaces, and the program uses the system timers to generate data for the screen. We also wrote our own makefile to build the hardware support libraries and our own code. We have been able to connect an external debugger to understand issues with the firmware, which will be very powerful for future development. Our next steps are to write a motor control module.
 
 [![]({{site.baseurl}}/images/software1.jpg)]({{site.baseurl}}/images/software1.jpg)
 <br />Our "Hello World" program running with screen support.<br />
+
+Unfortunately, we were not able to fully bring the ST Discovery board up to the operational level that was needed for our robot so we had to move our project to Arduino C++ code in the week before final demos.  We were able to have the st discovery board produce pwm signals, digital signals, and read both analog and digital signals.  However when we tried to have the board read analog signals using its built in adc we were unable to consistently produce valid pwm signals.  It is believed that  this error was caused by the use of a single pin for both functionalities but we ran out of time to fully debug the issue.
+
+While rushed, the move to Arduino was successful, we were able to avoid the problems which were discussed previously by reimplementing all arduino function ourselves so we knew exactly which pins and timers were in use at any time.  The Arduino based control system handled the same number of inputs and outputs for motors and sensors. However, it lacked the user interface and feedback through a touch screen. This was not a core feature of our embedded software, so the tradeoff was worth it.
+
+One feature that was not implemented with the final system is our stepper motor controllers. We electrically/physically built them and tested them using a test controller. They moved our steppers accurately with minimal control. These drivers have internal counters and clocks to manage moving at a given speed or to a given position. The ST L6470 was mounted on a SMD breakout board and the external circuitry required was soldered to the breakout. A heatsink adds current capacity to the system. Hopefully, we will be able to use these in a future project.
+
+[![]({{site.baseurl}}/images/stepper1.JPG)]({{site.baseurl}}/images/stepper1.JPG)
+
