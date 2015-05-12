@@ -39,6 +39,7 @@ The majority of our engineering work can be found in our mechanical and software
 * [Ian Rosado ILR 5]({{site.baseurl}}/docs/TeamB_irosado_ILR05.pdf)
 * [Ian Rosado ILR 6]({{site.baseurl}}/docs/TeamB_irosado_ILR06.pdf)
 * [Ian Rosado ILR 7]({{site.baseurl}}/docs/TeamB_irosado_ILR07.pdf)
+* [Ian Rosado ILR 8]({{site.baseurl}}/docs/TeamB_irosado_ILR08.pdf)
 
 # Schematics and Data Sheets #
 
