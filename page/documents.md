@@ -30,6 +30,8 @@ The majority of our engineering work can be found in our mechanical and software
 * [Ian Hartwig ILR 5]({{site.baseurl}}/docs/TeamB_ihartwig_ILR05.pdf)
 * [Ian Hartwig ILR 6]({{site.baseurl}}/docs/TeamB_ihartwig_ILR06.pdf)
 * [Ian Hartwig ILR 7]({{site.baseurl}}/docs/TeamB_ihartwig_ILR07.pdf)
+* [Ian Hartwig ILR 8]({{site.baseurl}}/docs/TeamB_ihartwig_ILR08.pdf)
+* [Ian Hartwig ILR 9]({{site.baseurl}}/docs/TeamB_ihartwig_ILR09.pdf)
 * [Ian Rosado ILR 1]({{site.baseurl}}/docs/TeamB_irosado_ILR01.pdf)
 * [Ian Rosado ILR 2]({{site.baseurl}}/docs/TeamB_irosado_ILR02.pdf)
 * [Ian Rosado ILR 3]({{site.baseurl}}/docs/TeamB_irosado_ILR03.pdf)
