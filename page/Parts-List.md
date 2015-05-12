@@ -8,6 +8,7 @@ layout: default
 We were quite conservative with our purchases and only purchased things after we had settled on a design, we were able to stay close to the allotted budget of $1000. The main contributor to us going over budget is due to the extra motor and gearbox for the pivot unit. Since our system was complex, we had to purchase many specialty items and this contributed significantly to the overall cost. 
 
 | Description | Quantity  | Unit Price | Total Price (Shipping Included) |
+|-------------|-----------|------------|---------------------------------|
 | Camera for testing positioning with microcontroller | 1 | $10.99 | $10.99 |
 | Pololu DC Motor Controller | 2 | $24.95 | $58.35 | 
 | Rubber U-channel | 1 | $14.00 | $19.35 | 
