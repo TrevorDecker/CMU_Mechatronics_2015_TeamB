@@ -53,5 +53,5 @@ We were quite conservative with our purchases and only purchased things after we
 | Timing belt for cleaning unit | 1 | $16.00 | $16.00 |
 | Cable Carrier for moving cleaner | 2 | $7.90 | $15.80 |
 | Versa Gearbox  | 1 | $109.96 | $122.66 | 
-|  |  |  | TOTAL:  | $1032.10 | 
+|  |  | **TOTAL:**  | **$1032.10** | 
 
